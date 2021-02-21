@@ -11,7 +11,6 @@ export class Vendor {
   @Field(() => ID)
   id: string;
 
-  @prop()
   @Field()
   _id: string;
 
