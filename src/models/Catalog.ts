@@ -1,6 +1,7 @@
 import { prop } from "@typegoose/typegoose";
 import { Field, ID, ObjectType } from "type-graphql";
 import Mongoose, { Model, Schema  } from "mongoose"
+import { VendorOutlet } from "./VendorOutlet";
 
 @ObjectType({ description: "The Catalog model" })
 export class Catalog {
@@ -18,22 +19,32 @@ export class Catalog {
 
   @prop()
   @Field()
+  expiry: Date;
+
+  @prop()
+  @Field()
   vendorId: string;
 
   @prop()
-  @Field(() => [String])
-  outlets: string[];
+  @Field()
+  catalogCategoryId: string;
 
   @prop()
-  @Field({nullable: true})
-  pages: number;
+  @Field(() => [VendorOutlet])
+  outlets: VendorOutlet[];
+
+  @prop()
+  @Field(() => [String],{nullable: true})
+  pages: string[];
 }
 
 const catalogSchema = new Schema({
   title: String,
+  expiry: Date,
   vendorId: { type: Mongoose.Types.ObjectId, ref: "Vendor" },
+  catalogCategoryId: { type: Mongoose.Types.ObjectId, ref: "CatalogCategories" },
   outlets: [{ type: Mongoose.Types.ObjectId, ref: "VendorOutlet" }],
-  pages: Number,
+  pages: [String],
 });
 
 const CatalogModel : Model<any> = Mongoose.model('Catalog', catalogSchema);

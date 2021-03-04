@@ -1,9 +1,9 @@
-import { getModelForClass, prop } from "@typegoose/typegoose";
+import { prop } from "@typegoose/typegoose";
 import { Field, ID, ObjectType } from "type-graphql";
-import { Model } from "mongoose"
+import Mongoose, { Model, Schema } from "mongoose"
 
-@ObjectType({ description: "The Catalog Catagory model" })
-export class CatalogCatagories {
+@ObjectType({ description: "The Catalog Category model" })
+export class CatalogCategories {
   
   @prop()
   @Field(() => ID)
@@ -18,6 +18,10 @@ export class CatalogCatagories {
   name: string;
 }
 
-const CatalogCatagoriesModel : Model<any> = getModelForClass(CatalogCatagories); 
+const catalogCategorySchema = new Schema({
+  name: String,
+});
 
-export default CatalogCatagoriesModel;
+const CatalogCategoriesModel : Model<any> = Mongoose.model('CatalogCategories', catalogCategorySchema);
+
+export default CatalogCategoriesModel;

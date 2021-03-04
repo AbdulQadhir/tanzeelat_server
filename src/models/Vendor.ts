@@ -10,8 +10,8 @@ export class Vendor {
   @prop()
   @Field(() => ID)
   id: string;
-
-  @Field()
+  
+  @Field(() => ID)
   _id: string;
 
   @prop()

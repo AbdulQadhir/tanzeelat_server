@@ -33,6 +33,10 @@ export class Coupon {
   vendorId: string;
 
   @prop()
+  @Field()
+  couponCategoryId: string;
+
+  @prop()
   @Field(() => [String])
   outlets: string[];
 }
@@ -43,6 +47,7 @@ const couponSchema = new Schema({
   startDate: Date,
   endDate: Date,
   vendorId: { type: Mongoose.Types.ObjectId, ref: "Vendor" },
+  couponCategoryId: { type: Mongoose.Types.ObjectId, ref: "CouponCategories" },
   outlets: [{ type: Mongoose.Types.ObjectId, ref: "VendorOutlet" }]
 });
 

@@ -1,21 +1,23 @@
 import "reflect-metadata";
 import { CatalogCategoryInput } from "../gqlObjectTypes/catalogcategories.types";
 import { Resolver, Query, Arg, Mutation } from "type-graphql"
-import CatalogCatagoriesModel, {CatalogCatagories} from "../models/CatalogCategories"
+import CatalogCategoriesModel, {CatalogCategories} from "../models/CatalogCategories"
 
  
 @Resolver()
 export class CatalogCatagoriesResolver {
-    @Query(() => [CatalogCatagories])
-    async categories(): Promise<CatalogCatagories[]> {
-        return CatalogCatagoriesModel.find();
+    @Query(() => [CatalogCategories])
+    async catalogCategories(): Promise<CatalogCategories[]> {
+        const cats = await CatalogCategoriesModel.find();
+        console.log(cats);
+        return cats;
     }
 
-    @Mutation(() => CatalogCatagories)
+    @Mutation(() => CatalogCategories)
     async addCatalogCategory(
         @Arg("input") input: CatalogCategoryInput
-    ): Promise<CatalogCatagories> {
-        const user = new CatalogCatagoriesModel({...input});
+    ): Promise<CatalogCategories> {
+        const user = new CatalogCategoriesModel({...input});
         const result = await user.save();
         return result;
     }
