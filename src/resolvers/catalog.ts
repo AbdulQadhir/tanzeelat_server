@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import { Resolver, Query, Arg, Mutation } from "type-graphql"
 import CatalogModel, { Catalog } from "../models/Catalog";
-import { CatalogInput, UpdPagesInput, UploadRespType } from "../gqlObjectTypes/catalog.type";
+import { CatalogInput, UpdPagesInput, UploadRespType, CatalogFilters, CatalogOutput } from "../gqlObjectTypes/catalog.type";
 import { v4 as uuidv4 } from 'uuid';
 
 const path = require("path");
@@ -22,9 +22,21 @@ export class CatalogResolver {
         return await CatalogModel.find({vendorId});
     }
     
-    @Query(() => [Catalog])
-    async activeCatalogs(): Promise<Catalog[]> {
-        return await CatalogModel.find().populate("outlets");
+    @Query(() => [CatalogOutput])
+    async activeCatalogs(
+        @Arg("filter") filter: CatalogFilters
+    ): Promise<CatalogOutput[]> {
+        let filters : any = {};
+        if(filter?.vendorId)
+            filters.vendorId = filter.vendorId;
+        if(filter?.category)
+            filters.catalogCategoryId = filter.category;
+        if(filter?.search)
+            filters.title = { "$regex": filter.search, "$options": "i" }
+        
+        //console.log(filters);
+        const catalogs = await CatalogModel.find(filters).populate("outlets").populate("vendorId").exec();
+        return catalogs;
     }
     
     @Query(() => Catalog)

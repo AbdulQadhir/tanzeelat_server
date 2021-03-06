@@ -31,7 +31,7 @@ export class Vendor {
   shopname: string;
 
   @prop()
-  @Field()
+  @Field({nullable: true})
   category: VendorCategory;
 
   @prop()
@@ -73,6 +73,10 @@ export class Vendor {
   @prop()
   @Field()
   contactemail: string;
+
+  @prop()
+  @Field({nullable: true})
+  logo: string;
 }
 
 const VendorModel : Model<any> = getModelForClass(Vendor); 

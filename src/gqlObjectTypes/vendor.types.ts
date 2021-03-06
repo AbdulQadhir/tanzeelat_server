@@ -1,6 +1,8 @@
 import { Field, InputType, ObjectType } from "type-graphql";
 import { IsEmail, Length } from "class-validator";
 import { LocationInput } from "./user.types";
+import { GraphQLUpload } from "graphql-upload";
+import { Upload } from "./catalog.type";
 
 
 @InputType({ description: "New Vendor data" })
@@ -55,6 +57,9 @@ export class AddVendorInput {
     @Field()
     @IsEmail()
     contactemail: string;
+
+    @Field(() => GraphQLUpload,{ nullable: true })
+    logo: Upload;
   }
 
 @ObjectType()
@@ -81,3 +86,11 @@ export class LoginInput {
     password:  string
 }
 
+@ObjectType()
+export class VendorExtra {
+    @Field({nullable: true})
+    catalogs?: number
+
+    @Field({nullable: true})
+    coupons?: number
+}

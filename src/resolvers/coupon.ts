@@ -6,7 +6,6 @@ import CouponCategoriesModel from "../models/CouponCategories";
 import { Vendor } from "../models/Vendor";
 import { Types } from "mongoose";
 
- 
 @Resolver()
 export class CouponResolver {
     
@@ -24,7 +23,7 @@ export class CouponResolver {
                 $lookup: {
                     from: 'coupons',
                     localField: '_id',
-                    foreignField: 'categoryId',
+                    foreignField: 'couponCategoryId',
                     as: 'coupons'
                 }
             },

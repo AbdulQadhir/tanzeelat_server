@@ -10,6 +10,9 @@ import { VendorOutletResolver } from "./resolvers/vendoroutlet";
 import { CatalogResolver } from "./resolvers/catalog";
 import { CouponResolver } from "./resolvers/coupon";
 import { CouponCatagoriesResolver } from "./resolvers/couponcategories";
+import { CatalogViewResolver } from "./resolvers/catalogview";
+import { UserCouponResolver } from "./resolvers/usercoupon";
+
 import { graphqlUploadExpress } from "graphql-upload";
 
 require('dotenv').config();
@@ -27,7 +30,9 @@ const startServer = async() => {
                 VendorOutletResolver,
                 CatalogResolver,
                 CouponResolver,
-                CouponCatagoriesResolver
+                CouponCatagoriesResolver,
+                CatalogViewResolver,
+                UserCouponResolver
             ]
         }),
         uploads: false

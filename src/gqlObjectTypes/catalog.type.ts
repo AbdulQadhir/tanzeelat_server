@@ -1,4 +1,6 @@
 import { GraphQLUpload,  } from "graphql-upload";
+import { Vendor } from "../models/Vendor";
+import { VendorOutlet } from "../models/VendorOutlet";
 import { Stream } from "stream";
 import { Field, InputType, ObjectType } from "type-graphql";
 
@@ -16,6 +18,44 @@ export class CatalogInput {
 
     @Field(() => [String],{nullable: true})
     pages: string[];
+}
+@ObjectType({ description: "The Catalog Output" })
+export class CatalogOutput {
+  
+  @Field()
+  id: string;
+
+  @Field()
+  title: string;
+
+  @Field()
+  expiry: Date;
+
+  @Field(() => Vendor)
+  vendorId: Vendor;
+
+  @Field()
+  catalogCategoryId: string;
+
+  @Field(() => [VendorOutlet])
+  outlets: VendorOutlet[];
+
+  @Field(() => [String],{nullable: true})
+  pages: string[];
+}
+
+@InputType({ description: "Catalog Filters" })
+export class CatalogFilters {
+
+    @Field({nullable: true})
+    vendorId?: string;
+
+    @Field({nullable: true})
+    search?: string;
+
+    @Field({nullable: true})
+    category?: string;
+    
 }
 
 export interface Upload {

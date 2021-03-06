@@ -1,4 +1,4 @@
-import { Field, InputType } from "type-graphql";
+import { Field, InputType, ObjectType } from "type-graphql";
 
 @InputType({ description: "New Coupon data" })
 export class CouponInput {
@@ -10,16 +10,36 @@ export class CouponInput {
     description: string;
 
     @Field()
-    startDate: Date;
+    startDate: string;
 
     @Field()
-    endDate: Date;
+    endDate: string;
 
     @Field()
     vendorId: string;
+
+    @Field()
+    couponCategoryId: string;
 
     @Field(() => [String])
     outlets: string[];
 }
 
+@ObjectType()
+export class CouponUnveil {
 
+    @Field({nullable: true})
+    userId?: string
+
+    @Field({nullable: true})
+    couponId?: string
+
+    @Field({nullable: true})
+    name?: string
+
+    @Field({nullable: true})
+    coupon?: string
+
+    @Field({nullable: true})
+    redeemed?: boolean
+}
