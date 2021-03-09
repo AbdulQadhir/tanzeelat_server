@@ -1,10 +1,11 @@
 import "reflect-metadata";
 import { Resolver, Query, Arg, Mutation } from "type-graphql"
 import CouponModel, { Coupon } from "../models/Coupon";
-import { CouponInput } from "..//gqlObjectTypes/coupon.type";
+import { CouponInput, CouponSummary } from "..//gqlObjectTypes/coupon.type";
 import CouponCategoriesModel from "../models/CouponCategories";
 import { Vendor } from "../models/Vendor";
 import { Types } from "mongoose";
+import UserCouponModel from "../models/UserCoupon";
 
 @Resolver()
 export class CouponResolver {
@@ -75,6 +76,18 @@ export class CouponResolver {
         @Arg("id") id : String
     ): Promise<Coupon> {
         return await CouponModel.findById(id);
+    }
+    
+    @Query(() => CouponSummary)
+    async couponSummary(
+        @Arg("id") id: String
+    ): Promise<CouponSummary> {
+        const sent = await UserCouponModel.count({couponId: id});
+        const redeemed = await UserCouponModel.count({couponId: id,redeemed: true});
+        return {
+            sent: sent || 0,
+            redeemed: redeemed || 0
+        }
     }
 
     @Mutation(() => Coupon)

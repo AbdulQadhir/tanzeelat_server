@@ -13,6 +13,12 @@ export class CatalogInput {
     @Field()
     vendorId: string;
 
+    @Field()
+    expiry: string;
+
+    @Field()
+    catalogCategoryId: string;
+
     @Field(() => [String])
     outlets: string[];
 

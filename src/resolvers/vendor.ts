@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { LoginInput, LoginResponse, AddVendorInput, VendorExtra } from "../gqlObjectTypes/vendor.types";
+import { VendorLoginInput, VendorLoginResponse, AddVendorInput, VendorExtra } from "../gqlObjectTypes/vendor.types";
 import { Resolver, Query, Arg, Mutation } from "type-graphql"
 import VendorModel, {Vendor} from "../models/Vendor"
 import { v4 as uuidv4 } from 'uuid';
@@ -48,10 +48,10 @@ export class VendorResolver {
         }
     }
 
-    @Query(() => LoginResponse)
-    async login(
-        @Arg("input") input : LoginInput 
-    ): Promise<LoginResponse>{
+    @Query(() => VendorLoginResponse)
+    async loginVendor(
+        @Arg("input") input : VendorLoginInput 
+    ): Promise<VendorLoginResponse>{
         
         const user = await VendorModel.findOne({username: input.username});
         if(!user)

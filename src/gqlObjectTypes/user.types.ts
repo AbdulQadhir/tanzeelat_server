@@ -72,6 +72,9 @@ export class LoginResponse {
 
     @Field({nullable: true})
     token?: string
+
+    @Field({nullable: true})
+    name?: string
 }
 
 @InputType()

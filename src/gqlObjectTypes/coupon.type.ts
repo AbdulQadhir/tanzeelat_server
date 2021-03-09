@@ -43,3 +43,13 @@ export class CouponUnveil {
     @Field({nullable: true})
     redeemed?: boolean
 }
+
+@ObjectType()
+export class CouponSummary {
+
+    @Field({nullable: true})
+    sent?: number
+
+    @Field({nullable: true})
+    redeemed?: number
+}

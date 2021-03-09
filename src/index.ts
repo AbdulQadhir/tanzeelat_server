@@ -14,6 +14,8 @@ import { CatalogViewResolver } from "./resolvers/catalogview";
 import { UserCouponResolver } from "./resolvers/usercoupon";
 
 import { graphqlUploadExpress } from "graphql-upload";
+import { ProductCatagoriesResolver } from "./resolvers/productcategory";
+import { ProductSubCatagoriesResolver } from "./resolvers/productsubcategory";
 
 require('dotenv').config();
 
@@ -32,7 +34,9 @@ const startServer = async() => {
                 CouponResolver,
                 CouponCatagoriesResolver,
                 CatalogViewResolver,
-                UserCouponResolver
+                UserCouponResolver,
+                ProductCatagoriesResolver,
+                ProductSubCatagoriesResolver
             ]
         }),
         uploads: false

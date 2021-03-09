@@ -2,8 +2,8 @@ import { prop } from "@typegoose/typegoose";
 import { Field, ID, ObjectType } from "type-graphql";
 import Mongoose, { Model, Schema } from "mongoose"
 
-@ObjectType({ description: "The Coupon Category model" })
-export class CouponCategories {
+@ObjectType({ description: "The Product Category model" })
+export class ProductCategories {
   
   @prop()
   @Field(() => ID)
@@ -18,20 +18,15 @@ export class CouponCategories {
   name: string;
 
   @prop()
-  @Field()
-  logo: string;
-
-  @prop()
   @Field({nullable: true})
   image: string;
 }
 
-const couponCategorySchema = new Schema({
+const productCategorySchema = new Schema({
   name: String,
-  logo: String,
   image: String
 });
 
-const CouponCategoriesModel : Model<any> = Mongoose.model('CouponCategories', couponCategorySchema);
+const ProductCategoriesModel : Model<any> = Mongoose.model('ProductCategories', productCategorySchema);
 
-export default CouponCategoriesModel; 
+export default ProductCategoriesModel;

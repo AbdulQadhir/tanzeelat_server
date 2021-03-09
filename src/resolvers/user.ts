@@ -47,7 +47,8 @@ export class UserResolver {
             };
             var token = jwt.sign(payload, privateKEY, signOptions);
             return {
-                token
+                token,
+                name: user.name
             }
         }
         else

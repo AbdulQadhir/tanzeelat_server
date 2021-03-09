@@ -63,22 +63,22 @@ export class AddVendorInput {
   }
 
 @ObjectType()
-export class FieldError {
+export class VendorFieldError {
     @Field()
     message?: string
 }
 
 @ObjectType()
-export class LoginResponse {
-    @Field(() => [FieldError], {nullable: true} )
-    errors?: FieldError[]
+export class VendorLoginResponse {
+    @Field(() => [VendorFieldError], {nullable: true} )
+    errors?: VendorFieldError[]
 
     @Field({nullable: true})
     token?: string
 }
 
 @InputType()
-export class LoginInput {
+export class VendorLoginInput {
     @Field()
     username: string
 
