@@ -6,9 +6,10 @@ import ProductSubCategoriesModel, { ProductSubCategories } from "../models/Produ
 @Resolver()
 export class ProductSubCatagoriesResolver {
     @Query(() => [ProductSubCategories])
-    async productSubCategories(): Promise<ProductSubCategories[]> {
-        const cats = await ProductSubCategoriesModel.find();
-        console.log(cats);
+    async productSubCategories(
+        @Arg("id") id: string
+    ): Promise<ProductSubCategories[]> {
+        const cats = await ProductSubCategoriesModel.find({productCategoryId:id});
         return cats;
     }
 
