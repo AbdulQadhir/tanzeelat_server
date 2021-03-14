@@ -17,6 +17,9 @@ import { graphqlUploadExpress } from "graphql-upload";
 import { ProductCatagoriesResolver } from "./resolvers/productcategory";
 import { ProductSubCatagoriesResolver } from "./resolvers/productsubcategory";
 
+const fs   = require('fs');
+const jwt  = require('jsonwebtoken');
+
 require('dotenv').config();
 
 const startServer = async() => {
@@ -39,7 +42,28 @@ const startServer = async() => {
                 ProductSubCatagoriesResolver
             ]
         }),
-        uploads: false
+        uploads: false,
+        context: ({ req }) => {
+            let token = req.headers?.authorization;
+    
+            if(token)
+            {
+                if(token.length > 7)
+                {
+                    token = token.substr(7);
+                    var publicKEY  = fs.readFileSync('src/keys/public.key', 'utf8');
+                    try {
+                        var decoded = jwt.verify(token,  publicKEY);
+                        if(decoded?.userId)
+                            return {userId: decoded.userId}
+                        //console.log("decoded",decoded?.userId);
+                    } catch(err) {
+                       // console.log("err",err)
+                    }
+                }
+            }
+            return {};
+        },
     })
 
     app.use(graphqlUploadExpress({ maxFiles: 30 }));

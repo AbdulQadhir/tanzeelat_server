@@ -39,6 +39,10 @@ export class Coupon {
   @prop()
   @Field(() => [String])
   outlets: string[];
+
+  @prop()
+  @Field({nullable: true})
+  userCouponId: string;
 }
 
 const couponSchema = new Schema({

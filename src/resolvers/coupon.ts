@@ -1,37 +1,46 @@
 import "reflect-metadata";
-import { Resolver, Query, Arg, Mutation } from "type-graphql"
+import { Resolver, Query, Arg, Mutation, Ctx, } from "type-graphql"
 import CouponModel, { Coupon } from "../models/Coupon";
 import { CouponInput, CouponSummary } from "..//gqlObjectTypes/coupon.type";
-import CouponCategoriesModel from "../models/CouponCategories";
 import { Vendor } from "../models/Vendor";
 import { Types } from "mongoose";
 import UserCouponModel from "../models/UserCoupon";
+import { Context } from "@apollo/client";
 
 @Resolver()
 export class CouponResolver {
     
     @Query(() => [Vendor])
     async vendorsWithCoupons(
-        @Arg("category") categoryId : string
+        @Arg("category") categoryId : string,
+        @Ctx() ctx: Context
     ): Promise<Vendor[]> {
-        const vendors = await CouponCategoriesModel.aggregate([
+
+        const userId = ctx.userId || "";
+        
+
+        const vendors = await UserCouponModel.aggregate([
             {
                 $match:{
-                    _id: Types.ObjectId(categoryId)
+                    userId: Types.ObjectId(userId)
                 }
             },
             {
-                $lookup: {
+                $lookup:{
                     from: 'coupons',
-                    localField: '_id',
-                    foreignField: 'couponCategoryId',
+                    localField: 'couponId',
+                    foreignField: '_id',
                     as: 'coupons'
                 }
             },
             {
-                $unwind: {
-                    path: "$coupons",
-                    preserveNullAndEmptyArrays: false
+                $unwind:{
+                    path: "$coupons"
+                }
+            },
+            {
+                $match:{
+                    "coupons.couponCategoryId": Types.ObjectId(categoryId)
                 }
             },
             {
@@ -61,14 +70,55 @@ export class CouponResolver {
                 }
             }
         ]);
+        
         return vendors;
     }
     
     @Query(() => [Coupon])
     async coupons(
-        @Arg("vendorId") vendorId : String
+        @Arg("vendorId") vendorId : string,
+        @Arg("categoryId") categoryId : string,
+        @Ctx() ctx: Context
     ): Promise<Coupon[]> {
-        return await CouponModel.find({vendorId});
+
+        const userId = ctx.userId || "";
+
+        const coupons = await UserCouponModel.aggregate([
+            {
+                $match:{
+                    userId: Types.ObjectId(userId)
+                }
+            },
+            {
+                $lookup:{
+                    from: 'coupons',
+                    localField: 'couponId',
+                    foreignField: '_id',
+                    as: 'coupons'
+                }
+            },
+            {
+                $unwind:{
+                    path: "$coupons"
+                }
+            },
+            {
+                $match:{
+                    "coupons.couponCategoryId": Types.ObjectId(categoryId),
+                    "coupons.vendorId" : Types.ObjectId(vendorId),
+                }
+            },
+            {
+                $project:{
+                    "_id": "$coupons._id",
+                    "name": "$coupons.name",
+                    "description": "$coupons.description",
+                    "userCouponId": "$_id"
+                }
+            }
+        ]);
+        
+        return coupons;
     }
     
     @Query(() => Coupon)
