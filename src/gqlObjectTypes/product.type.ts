@@ -1,6 +1,7 @@
 import { GraphQLUpload,  } from "graphql-upload";
+import { Product } from "../models/Products";
 import { Stream } from "stream";
-import { Field, InputType } from "type-graphql";
+import { Field, InputType, ObjectType } from "type-graphql";
 
 @InputType({ description: "New Product data" })
 export class ProductInput {
@@ -19,6 +20,19 @@ export class ProductInput {
 
     @Field(() => GraphQLUpload,{ nullable: true })
     image: Upload;
+}
+
+@ObjectType()
+export class ProductListResponse {
+
+    @Field()
+    subcategoryId: string
+
+    @Field()
+    subcategory: string
+
+    @Field(() => [Product])
+    products: Product[]
 }
 
 export interface Upload {

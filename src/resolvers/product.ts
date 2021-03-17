@@ -1,8 +1,9 @@
 import "reflect-metadata";
 import { Resolver, Query, Arg, Mutation } from "type-graphql"
-import { ProductInput } from "../gqlObjectTypes/product.type";
+import { ProductInput, ProductListResponse } from "../gqlObjectTypes/product.type";
 import { v4 as uuidv4 } from 'uuid';
 import ProductModel, { Product } from "../models/Products";
+import { Types } from "mongoose";
 
 const path = require("path");
  
@@ -20,11 +21,51 @@ export class ProductResolver {
         return await ProductModel.find({});
     }
     
-    @Query(() => [Product])
+    @Query(() => [ProductListResponse])
     async productsByVendor(
         @Arg("vendorId") vendorId: string
-    ): Promise<Product[]> {
-        return await ProductModel.find({vendorId});
+    ): Promise<ProductListResponse[]> {
+        return await ProductModel.aggregate([
+            {
+                $match: {
+                    "vendorId": Types.ObjectId(vendorId)
+                }
+            },
+            {
+                $group: {
+                    _id: "$productSubCategoryId",
+                    productSubCategoryId: {
+                      $first: "$productSubCategoryId"
+                      },
+                    products: {
+                      "$push": { 
+                        name: "$name",
+                        image: "$image"
+                      }
+                    }
+                }
+            },
+            {
+                $lookup: {
+                    from: 'productsubcategories',
+                    localField: 'productSubCategoryId',
+                    foreignField: '_id',
+                    as: 'subcategory'
+                }
+            },
+            {
+                $unwind: {
+                    path: "$subcategory",
+                }
+            },
+            {
+                $project: {
+                    "subcategoryId": "$productSubCategoryId",
+                    "subcategory": "$subcategory.name",
+                    products : 1
+                }
+            }
+        ]);
     }
     
     @Mutation(() => Product)

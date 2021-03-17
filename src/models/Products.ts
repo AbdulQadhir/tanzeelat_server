@@ -18,6 +18,10 @@ export class Product {
 
   @prop()
   @Field()
+  vendorId: string;
+
+  @prop()
+  @Field()
   productCategoryId: string;
 
   @prop()
@@ -32,6 +36,7 @@ export class Product {
 const productSchema = new Schema({
   name: String,
   expiry: Date,
+  vendorId: { type: Mongoose.Types.ObjectId, ref: "Vendor" },
   productCategoryId: { type: Mongoose.Types.ObjectId, ref: "ProductCategories" },
   productSubCategoryId: { type: Mongoose.Types.ObjectId, ref: "ProductSubCategories" },
   image: String
