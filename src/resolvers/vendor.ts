@@ -78,7 +78,8 @@ export class VendorResolver {
             };
             var token = jwt.sign(payload, privateKEY, signOptions);
             return {
-                token
+                token,
+                name: user.shopname
             }
         }
         else

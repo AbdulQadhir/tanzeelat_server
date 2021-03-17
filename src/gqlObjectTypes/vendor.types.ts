@@ -74,6 +74,9 @@ export class VendorLoginResponse {
     errors?: VendorFieldError[]
 
     @Field({nullable: true})
+    name?: string
+
+    @Field({nullable: true})
     token?: string
 }
 

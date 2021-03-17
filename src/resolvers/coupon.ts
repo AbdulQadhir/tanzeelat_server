@@ -22,7 +22,8 @@ export class CouponResolver {
         const vendors = await UserCouponModel.aggregate([
             {
                 $match:{
-                    userId: Types.ObjectId(userId)
+                    userId: Types.ObjectId(userId),
+                    redeemed: false
                 }
             },
             {
@@ -86,7 +87,8 @@ export class CouponResolver {
         const coupons = await UserCouponModel.aggregate([
             {
                 $match:{
-                    userId: Types.ObjectId(userId)
+                    userId: Types.ObjectId(userId),
+                    redeemed: false
                 }
             },
             {
@@ -146,6 +148,24 @@ export class CouponResolver {
     ): Promise<Coupon> {
         const coupon = new CouponModel({...input});
         const result = await coupon.save();
+        return result;
+    }
+
+    @Mutation(() => Coupon)
+    async updateCoupon(
+        @Arg("input") input: CouponInput,
+        @Arg("id") id: string
+    ): Promise<Coupon> {
+        const result = await CouponModel.findByIdAndUpdate(id,{
+            $set:{
+                name: input.name,
+                description: input.description,
+                startDate: input.startDate,
+                endDate: input.endDate,
+                couponCategoryId: input.couponCategoryId,
+                outlets: input.outlets
+            }
+        });
         return result;
     }
 }
