@@ -123,6 +123,15 @@ export class CouponResolver {
         return coupons;
     }
     
+    @Query(() => [Coupon])
+    async couponsOfVendor(
+        @Arg("vendorId") vendorId : string
+    ): Promise<Coupon[]> {
+
+        const coupons = await CouponModel.find({vendorId})
+        return coupons;
+    }
+    
     @Query(() => Coupon)
     async couponDt(
         @Arg("id") id : String
