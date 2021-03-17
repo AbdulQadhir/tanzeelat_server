@@ -18,11 +18,11 @@ export class Product {
 
   @prop()
   @Field()
-  productCategoryId: Date;
+  productCategoryId: string;
 
   @prop()
   @Field()
-  productSubCategoryId: Date;
+  productSubCategoryId: string;
 
   @prop()
   @Field({nullable: true})
