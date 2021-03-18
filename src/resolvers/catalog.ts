@@ -3,6 +3,7 @@ import { Resolver, Query, Arg, Mutation } from "type-graphql"
 import CatalogModel, { Catalog } from "../models/Catalog";
 import { CatalogInput, UpdPagesInput, UploadRespType, CatalogFilters, CatalogOutput } from "../gqlObjectTypes/catalog.type";
 import { v4 as uuidv4 } from 'uuid';
+import { Types } from "mongoose";
 
 const path = require("path");
  
@@ -28,14 +29,44 @@ export class CatalogResolver {
     ): Promise<CatalogOutput[]> {
         let filters : any = {};
         if(filter?.vendorId)
-            filters.vendorId = filter.vendorId;
+            filters["vendorId._id"] = Types.ObjectId(filter.vendorId);
         if(filter?.category)
             filters.catalogCategoryId = filter.category;
         if(filter?.search)
             filters.title = { "$regex": filter.search, "$options": "i" }
+        if(filter?.state)
+            filters["outlets.state"] = filter.state;
+            
+        const catalogs = await CatalogModel.aggregate([
+            {
+                $lookup: {
+                    from: 'vendoroutlets',
+                    localField: 'outlets',
+                    foreignField: '_id',
+                    as: 'outlets'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'vendors',
+                    localField: 'vendorId',
+                    foreignField: '_id',
+                    as: 'vendorId'
+                }
+            },
+            {
+                $unwind: {
+                    path: "$vendorId"
+                }
+            },
+            {
+                $match:{
+                //    expiry: { $gte : new Date() },
+                    ...filters
+                }
+            }
+        ]);
         
-        //console.log(filters);
-        const catalogs = await CatalogModel.find(filters).populate("outlets").populate("vendorId").exec();
         return catalogs;
     }
     

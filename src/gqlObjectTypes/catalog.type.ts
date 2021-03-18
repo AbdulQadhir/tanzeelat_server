@@ -29,7 +29,7 @@ export class CatalogInput {
 export class CatalogOutput {
   
   @Field()
-  id: string;
+  _id: string;
 
   @Field()
   title: string;
@@ -61,6 +61,9 @@ export class CatalogFilters {
 
     @Field({nullable: true})
     category?: string;
+
+    @Field({nullable: true})
+    state?: string;
     
 }
 
