@@ -106,5 +106,13 @@ export class ProductResolver {
         const result = await product.save();
         return result;
     }
+    
+    @Mutation(() => Boolean)
+    async delProduct(
+        @Arg("id") id: string
+    ): Promise<Boolean> {   
+        await ProductModel.findByIdAndDelete(id);
+        return true;
+    }
 
 }
