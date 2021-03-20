@@ -17,6 +17,8 @@ import { graphqlUploadExpress } from "graphql-upload";
 import { ProductCatagoriesResolver } from "./resolvers/productcategory";
 import { ProductSubCatagoriesResolver } from "./resolvers/productsubcategory";
 import { ProductResolver } from "./resolvers/product";
+import { NewsFeedResolver } from "./resolvers/newsfeed";
+import { CouponSubCatagoriesResolver } from "./resolvers/couponsubcategory";
 
 const fs   = require('fs');
 const jwt  = require('jsonwebtoken');
@@ -37,11 +39,13 @@ const startServer = async() => {
                 CatalogResolver,
                 CouponResolver,
                 CouponCatagoriesResolver,
+                CouponSubCatagoriesResolver,
                 CatalogViewResolver,
                 UserCouponResolver,
                 ProductCatagoriesResolver,
                 ProductSubCatagoriesResolver,
-                ProductResolver
+                ProductResolver,
+                NewsFeedResolver,
             ]
         }),
         uploads: false,

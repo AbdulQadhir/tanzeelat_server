@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import { CouponSubCategoryInput } from "../gqlObjectTypes/couponcategories.types";
 import { Resolver, Query, Arg, Mutation } from "type-graphql"
-import CouponSubCategoriesModel, {CouponSubCategories} from "src/models/CouponSubCategories";
+import CouponSubCategoriesModel, {CouponSubCategories} from "../models/CouponSubCategories";
 import { v4 as uuidv4 } from 'uuid';
 
 const path = require("path");
