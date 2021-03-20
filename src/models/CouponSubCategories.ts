@@ -3,7 +3,7 @@ import { Field, ID, ObjectType } from "type-graphql";
 import Mongoose, { Model, Schema } from "mongoose"
 
 @ObjectType({ description: "The Coupon Category model" })
-export class CouponCategories {
+export class CouponSubCategories {
   
   @prop()
   @Field(() => ID)
@@ -20,14 +20,18 @@ export class CouponCategories {
   @prop()
   @Field({nullable: true})
   image: string;
+
+  @prop()
+  @Field()
+  couponCategoryId: string;
 }
 
-const couponCategorySchema = new Schema({
+const couponSubCategorySchema = new Schema({
   name: String,
-  logo: String,
-  image: String
+  image: String,
+  couponCategoryId: { type: Mongoose.Types.ObjectId, ref: "CouponCategories" },
 });
 
-const CouponCategoriesModel : Model<any> = Mongoose.model('CouponCategories', couponCategorySchema);
+const CouponSubCategoriesModel : Model<any> = Mongoose.model('CouponSubCategories', couponSubCategorySchema);
 
-export default CouponCategoriesModel; 
+export default CouponSubCategoriesModel; 
