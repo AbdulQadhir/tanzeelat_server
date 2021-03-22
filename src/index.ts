@@ -19,7 +19,7 @@ import { ProductSubCatagoriesResolver } from "./resolvers/productsubcategory";
 import { ProductResolver } from "./resolvers/product";
 import { NewsFeedResolver } from "./resolvers/newsfeed";
 import { CouponSubCatagoriesResolver } from "./resolvers/couponsubcategory";
-import { WarrantyCardResolver } from "./resolvers/warrantyCard";
+import { WarrantyCardResolver } from "./resolvers/warrantycard";
 
 const fs   = require('fs');
 const jwt  = require('jsonwebtoken');
