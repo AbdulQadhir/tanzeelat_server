@@ -23,7 +23,7 @@ export class WarrantyCardResolver {
     }
     
     @Mutation(() => WarrantyCard)
-    async addCatalog(
+    async addWarrantyCard(
         @Arg("input") input: WarrantyCardInput
     ): Promise<WarrantyCard> {
 
