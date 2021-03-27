@@ -20,6 +20,8 @@ import { ProductResolver } from "./resolvers/product";
 import { NewsFeedResolver } from "./resolvers/newsfeed";
 import { CouponSubCatagoriesResolver } from "./resolvers/couponsubcategory";
 import { WarrantyCardResolver } from "./resolvers/warrantycard";
+import { AgentResolver } from "./resolvers/agent";
+import { SuperAdminResolver } from "./resolvers/superadmin";
 
 const fs   = require('fs');
 const jwt  = require('jsonwebtoken');
@@ -47,7 +49,9 @@ const startServer = async() => {
                 ProductSubCatagoriesResolver,
                 ProductResolver,
                 NewsFeedResolver,
-                WarrantyCardResolver
+                WarrantyCardResolver,
+                AgentResolver,
+                SuperAdminResolver
             ]
         }),
         uploads: false,
