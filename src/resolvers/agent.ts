@@ -21,4 +21,21 @@ export class AgentResolver {
         const result = await user.save();
         return result;
     }
+
+    @Mutation(() => Agent)
+    async updateAgent(
+        @Arg("input") input: AgentInput,
+        @Arg("id") id: string
+    ): Promise<Agent> {
+        const result = await AgentModel.findByIdAndUpdate(id,{
+            $set:{
+                name: input.name,
+                password: input.password,
+                email:input.email,
+                phone:input.phone,
+                roles:input.roles
+            }
+        });
+        return result;
+    }
 }
