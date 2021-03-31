@@ -3,7 +3,6 @@ import { Resolver, Query, Arg, Mutation } from "type-graphql"
 import SuperAdminModel, { SuperAdmin } from "../models/SuperAdmin";
 import { SuperAdminInput } from "../gqlObjectTypes/superadmin.types";
 
- 
 @Resolver()
 export class SuperAdminResolver {
     @Query(() => [SuperAdmin])

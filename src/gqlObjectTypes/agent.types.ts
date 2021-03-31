@@ -17,4 +17,7 @@ export class AgentInput {
   
     @Field(()=>[String],{nullable:true})
     roles: string[];
+  
+    @Field(()=>[String],{nullable:true})
+    accessVendors: string[];
 }

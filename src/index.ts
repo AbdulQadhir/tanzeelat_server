@@ -22,15 +22,20 @@ import { CouponSubCatagoriesResolver } from "./resolvers/couponsubcategory";
 import { WarrantyCardResolver } from "./resolvers/warrantycard";
 import { AgentResolver } from "./resolvers/agent";
 import { SuperAdminResolver } from "./resolvers/superadmin";
+import { AuthResolver } from "./resolvers/auth";
 
 const fs   = require('fs');
 const jwt  = require('jsonwebtoken');
 
 require('dotenv').config();
 
+var cors = require('cors')
+
 const startServer = async() => {
 
     const app = express();
+
+    app.use(cors())
 
     const server = new ApolloServer({
         schema: await buildSchema({
@@ -51,7 +56,8 @@ const startServer = async() => {
                 NewsFeedResolver,
                 WarrantyCardResolver,
                 AgentResolver,
-                SuperAdminResolver
+                SuperAdminResolver,
+                AuthResolver
             ]
         }),
         uploads: false,
@@ -67,7 +73,7 @@ const startServer = async() => {
                     try {
                         var decoded = jwt.verify(token,  publicKEY);
                         if(decoded?.userId)
-                            return {userId: decoded.userId}
+                            return {userId: decoded.userId, roles: decoded.roles || []}
                         //console.log("decoded",decoded?.userId);
                     } catch(err) {
                        // console.log("err",err)

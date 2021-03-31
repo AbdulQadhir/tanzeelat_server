@@ -1,9 +1,11 @@
 import "reflect-metadata";
-import { Resolver, Query, Arg, Mutation } from "type-graphql"
+import { Resolver, Query, Arg, Mutation, Ctx } from "type-graphql"
 import CatalogModel, { Catalog } from "../models/Catalog";
 import { CatalogInput, UpdPagesInput, UploadRespType, CatalogFilters, CatalogOutput } from "../gqlObjectTypes/catalog.type";
 import { v4 as uuidv4 } from 'uuid';
 import { Types } from "mongoose";
+import { Context } from "vm";
+import { checkVendorAccess } from "./auth";
 
 const path = require("path");
  
@@ -18,8 +20,13 @@ export class CatalogResolver {
     
     @Query(() => [Catalog])
     async catalogs(
-        @Arg("vendorId") vendorId : String
+        @Arg("vendorId") vendorId : string,
+        @Ctx() ctx: Context
     ): Promise<Catalog[]> {
+        const access = await checkVendorAccess(vendorId, ctx.userId)
+        if(!access)
+            throw new Error("Unauthorized!");
+
         return await CatalogModel.find({vendorId});
     }
     
@@ -90,7 +97,6 @@ export class CatalogResolver {
     async updCatalogPages(
         @Arg("pages",() => UpdPagesInput)  pages : UpdPagesInput
     ): Promise<UploadRespType> {
-        console.log(pages)
 
         const s3 = new AWS.S3({
             accessKeyId: ID,

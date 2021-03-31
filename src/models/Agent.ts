@@ -32,6 +32,10 @@ export class Agent {
   @prop()
   @Field(()=>[String],{nullable:true})
   roles: string[];
+
+  @prop()
+  @Field(()=>[String],{nullable:true})
+  accessVendors: string[];
 }
 
 const agentSchema = new Schema({
@@ -40,6 +44,7 @@ const agentSchema = new Schema({
   phone: String,
   password: String,
   roles: [String],
+  accessVendors: [{type: Mongoose.Types.ObjectId, ref: "Vendor"}],
 });
 
 const AgentModel : Model<any> = Mongoose.model('Agent', agentSchema);

@@ -16,6 +16,7 @@ export class CatalogCategories {
   @prop()
   @Field()
   name: string;
+  
 }
 
 const catalogCategorySchema = new Schema({
