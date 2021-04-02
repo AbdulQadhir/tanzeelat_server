@@ -13,6 +13,14 @@ export class AgentResolver {
         return cats;
     }
 
+    @Query(() => Agent)
+    async AgentDt(
+        @Arg("id") id : String
+    ): Promise<Agent> {
+        const agent = await AgentModel.findById(id);
+        return agent;
+    }
+
     @Mutation(() => Agent)
     async addAgent(
         @Arg("input") input: AgentInput
