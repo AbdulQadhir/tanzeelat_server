@@ -2,6 +2,7 @@ import { GraphQLUpload,  } from "graphql-upload";
 import { Product } from "../models/Products";
 import { Stream } from "stream";
 import { Field, InputType, ObjectType } from "type-graphql";
+import { Vendor } from "../models/Vendor";
 
 @InputType({ description: "New Product data" })
 export class ProductInput {
@@ -20,6 +21,39 @@ export class ProductInput {
 
     @Field(() => GraphQLUpload,{ nullable: true })
     image: Upload;
+}
+
+@InputType({ description: "Product Filters" })
+export class ProductFilters {
+
+    @Field({nullable: true})
+    name?: string;
+
+    @Field({nullable: true})
+    vendorId?: string;
+}
+
+
+@ObjectType({ description: "New Product data" })
+export class ProductOutput {
+  
+    @Field()
+    id: string;
+
+    @Field()
+    name: string;
+
+    @Field(() => Vendor)
+    vendorId: Vendor;
+
+    @Field()
+    productCategoryId: string;
+
+    @Field()
+    productSubCategoryId: string;
+
+    @Field()
+    image: string;
 }
 
 @ObjectType()

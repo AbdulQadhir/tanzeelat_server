@@ -1,7 +1,8 @@
 import "reflect-metadata";
-import { ProductCategoryInput } from "../gqlObjectTypes/productcategories.types";
+import { ProductCategoryInput, ProductCategoryListOutput } from "../gqlObjectTypes/productcategories.types";
 import { Resolver, Query, Arg, Mutation } from "type-graphql"
 import ProductCategoriesModel, { ProductCategories } from "../models/ProductCategories";
+import ProductSubCategoriesModel from "../models/ProductSubCategory";
 
  
 @Resolver()
@@ -11,6 +12,25 @@ export class ProductCatagoriesResolver {
         const cats = await ProductCategoriesModel.find();
         console.log(cats);
         return cats;
+    }
+
+    @Query(() => [ProductCategoryListOutput])
+    async productCategoryList(): Promise<ProductCategoryListOutput[]> {
+        const cats = await ProductSubCategoriesModel.aggregate([
+            {
+                $group: {
+                    _id: "$productCategoryId",
+                    productCategoryId: {
+                      $first: "$productCategoryId"
+                    },
+                    subCategories: {
+                      "$push": { name: "$name", id: "$_id" }
+                    }
+                }
+            }
+        ]);
+        const res = await ProductSubCategoriesModel.populate(cats, {path: "productCategoryId"});
+        return res;
     }
 
     @Mutation(() => ProductCategories)

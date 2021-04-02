@@ -14,8 +14,8 @@ export class ProductSubCategories {
   _id: string;
 
   @prop()
-  @Field()
-  name: string;
+  @Field({nullable: true})
+  name?: string;
 
   @prop()
   @Field()

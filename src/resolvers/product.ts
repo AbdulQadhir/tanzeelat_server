@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { Resolver, Query, Arg, Mutation } from "type-graphql"
-import { ProductInput, ProductListResponse } from "../gqlObjectTypes/product.type";
+import { ProductFilters, ProductInput, ProductListResponse, ProductOutput } from "../gqlObjectTypes/product.type";
 import { v4 as uuidv4 } from 'uuid';
 import ProductModel, { Product } from "../models/Products";
 import { Types } from "mongoose";
@@ -16,9 +16,13 @@ const AWS = require('aws-sdk');
 @Resolver()
 export class ProductResolver {
     
-    @Query(() => [Product])
-    async allProducts(): Promise<Product[]> {
-        return await ProductModel.find({});
+    @Query(() => [ProductOutput])
+    async allProducts(
+        @Arg("productSubCategoryId") productSubCategoryId: string,
+        @Arg("filter") filter: ProductFilters
+    ): Promise<ProductOutput[]> {
+        console.log(filter);
+        return await ProductModel.find({productSubCategoryId}).populate("vendorId");
     }
     
     @Query(() => [ProductListResponse])
