@@ -108,7 +108,8 @@ export class VendorResolver {
                 contactname :  input.contactname,
                 contactphone :  input.contactphone,
                 contactmobile :  input.contactmobile,
-                contactemail :  input.contactemail
+                contactemail :  input.contactemail,
+                grade : input.grade
             }
         }
         

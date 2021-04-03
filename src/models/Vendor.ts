@@ -77,6 +77,10 @@ export class Vendor {
   @prop()
   @Field({nullable: true})
   logo: string;
+
+  @prop()
+  @Field()
+  grade: number;
 }
 
 const VendorModel : Model<any> = getModelForClass(Vendor); 

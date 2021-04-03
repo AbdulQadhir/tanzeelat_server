@@ -5,6 +5,7 @@ import AgentModel from "../models/Agent";
 import SuperAdminModel from "../models/SuperAdmin";
 import VendorModel from "../models/Vendor";
 import { Resolver, Query, Arg } from "type-graphql"
+import { Roles } from "../enums/roles.enum";
 
 const fs   = require('fs');
 const jwt  = require('jsonwebtoken');
@@ -100,6 +101,11 @@ export class AuthResolver {
                     }
             }
         }
+    }
+
+    @Query(() => [String])
+    getAccessRoles(): String[] {
+        return Object.values(Roles);
     }
 
 }

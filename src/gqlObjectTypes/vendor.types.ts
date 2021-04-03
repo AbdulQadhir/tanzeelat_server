@@ -1,5 +1,5 @@
 import { Field, InputType, ObjectType } from "type-graphql";
-import { IsEmail, Length } from "class-validator";
+import { IsEmail } from "class-validator";
 import { LocationInput } from "./user.types";
 import { GraphQLUpload } from "graphql-upload";
 import { Upload } from "./catalog.type";
@@ -9,7 +9,6 @@ import { Upload } from "./catalog.type";
 export class AddVendorInput {
   
     @Field()
-    @Length(5, 100)
     username: string;
   
     @Field()
@@ -28,14 +27,12 @@ export class AddVendorInput {
     tradelicense: string;
   
     @Field()
-    @Length(10, 50)
     emiratesid: string;
   
     @Field({nullable: true})
     location: LocationInput;
   
     @Field({nullable: true})
-    @Length(10, 100)
     ownername: string;
   
     @Field({nullable: true})
@@ -60,6 +57,9 @@ export class AddVendorInput {
 
     @Field(() => GraphQLUpload,{ nullable: true })
     logo: Upload;
+  
+    @Field()
+    grade: string;
   }
 
 @ObjectType()

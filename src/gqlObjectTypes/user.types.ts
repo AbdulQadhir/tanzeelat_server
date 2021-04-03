@@ -2,11 +2,8 @@ import { Gender } from "../enums/user.enum";
 import { Field, InputType, ObjectType } from "type-graphql";
 import { IsEmail, Length } from "class-validator";
 
-
 @InputType()
 export class LocationInput {
-    @Field({nullable: true} )
-    name?: string
 
     @Field({nullable: true})
     lat?: string
@@ -17,8 +14,6 @@ export class LocationInput {
 
 @ObjectType()
 export class Location {
-    @Field({nullable: true} )
-    name?: string
 
     @Field({nullable: true})
     lat?: string
@@ -39,11 +34,9 @@ export class AddUserInput {
     email: string;
   
     @Field()
-    @Length(5, 15)
     mobile: string;
   
     @Field()
-    @Length(10, 50)
     emiratesId: string;
   
     @Field({nullable: true})
