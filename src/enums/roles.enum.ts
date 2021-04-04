@@ -2,7 +2,9 @@ export enum Roles{
     SuperAdminManageRole = "SuperAdminManageRole",
     SettingsManageRole = "SettingsManageRole",
     AgentManageRole = "AgentManageRole",
-    VendorManageRole = "AgentManageRole",
+    VendorCreationRole = "VendorCreationRole",
+    VendorManageRole = "VendorManageRole",
+    VendorCatalogRole = "VendorCatalogRole",
     CatalogManageRole = "CatalogManageRole",
     CatalogApprovalRole = "CatalogApprovalRole"
 }

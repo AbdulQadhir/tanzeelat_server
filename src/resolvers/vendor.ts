@@ -1,13 +1,16 @@
 import "reflect-metadata";
 import { VendorLoginInput, VendorLoginResponse, AddVendorInput, VendorExtra } from "../gqlObjectTypes/vendor.types";
-import { Resolver, Query, Arg, Mutation } from "type-graphql"
+import { Resolver, Query, Arg, Mutation, Ctx } from "type-graphql"
 import VendorModel, {Vendor} from "../models/Vendor"
 import { v4 as uuidv4 } from 'uuid';
 import CatalogModel from "../models/Catalog";
 import CouponModel from "../models/Coupon";
+import { accessibleVendorList } from "./auth";
+import { Context } from "vm";
+import VendorOutletModel from "../models/VendorOutlet";
 
 const bcrypt = require('bcrypt');
-const saltRounds = 10;
+//const saltRounds = 10;
 
 const fs   = require('fs');
 const jwt  = require('jsonwebtoken');
@@ -20,11 +23,25 @@ const SECRET = '56TXs8QjWVueUcX2DICuQDvUeP62W8vOx1qMlzYs';
 const BUCKET_NAME = 'tanzeelat';
 const AWS = require('aws-sdk');
 
- 
 @Resolver()
 export class VendorResolver {
     @Query(() => [Vendor])
-    async vendors(): Promise<Vendor[]> {
+    async vendors(
+        @Ctx() ctx: Context
+    ): Promise<Vendor[]> {
+        console.log(ctx.userId);
+        const accessList = await accessibleVendorList(ctx.userId);
+        if(accessList.length == 0) return [];
+        if(accessList[0] == "all")
+            return await VendorModel.find();
+        else
+            return await VendorModel.find({
+                '_id': { $in: accessList }
+            });
+    }
+
+    @Query(() => [Vendor])
+    async allVendors(): Promise<Vendor[]> {
         return await VendorModel.find();
     }
 
@@ -42,9 +59,11 @@ export class VendorResolver {
     ): Promise<VendorExtra> {
         const catalogs = await CatalogModel.count({vendorId: id});
         const coupons = await CouponModel.count({vendorId: id});
+        const outlets = await VendorOutletModel.count({vendorId: id});
         return {
             coupons: coupons || 0,
-            catalogs: catalogs || 0
+            catalogs: catalogs || 0,
+            outlets: outlets || 0
         }
     }
 
@@ -99,7 +118,6 @@ export class VendorResolver {
                 shopname : input.shopname,
                 username :  input.username,
                 brandname :  input.brandname,
-                category : input.category,
                 tradelicense :  input.tradelicense,
                 emiratesid :  input.emiratesid,
                 ownername :  input.ownername,
@@ -115,8 +133,8 @@ export class VendorResolver {
         
         if(input.password)
         {
-            const hashedPass = await bcrypt.hash(input.password, saltRounds);
-            replace.$set["password"] = hashedPass;
+        //    const hashedPass = await bcrypt.hash(input.password, saltRounds);
+            replace.$set["password"] = input.password;//hashedPass;
         }
 
         if(input.logo)
@@ -163,8 +181,8 @@ export class VendorResolver {
     ): Promise<Vendor> {
         const user = new VendorModel({...input});
 
-        const hashedPass = await bcrypt.hash(input.password, saltRounds);
-        user.password = hashedPass;
+       // const hashedPass = await bcrypt.hash(input.password, saltRounds);
+      //  user.password = hashedPass;
         const result = await user.save();
 
         return result;

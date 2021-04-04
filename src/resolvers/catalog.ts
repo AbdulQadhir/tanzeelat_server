@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Types } from "mongoose";
 import { Context } from "vm";
 import { checkVendorAccess } from "./auth";
+import { CatalogStatus } from "../enums/catalogstatus.enum";
 
 const path = require("path");
  
@@ -34,19 +35,35 @@ export class CatalogResolver {
     async activeCatalogs(
         @Arg("filter") filter: CatalogFilters
     ): Promise<CatalogOutput[]> {
+        console.log(filter);
         let filters : any = {};
         if(filter?.vendorId)
-            filters["vendorId._id"] = Types.ObjectId(filter.vendorId);
+            filters["vendor._id"] = Types.ObjectId(filter.vendorId);
         if(filter?.category)
-            filters.catalogCategoryId = filter.category;
+            filters.catalogCategoryId = Types.ObjectId(filter.category);
         if(filter?.search)
             filters.title = { "$regex": filter.search, "$options": "i" }
         if(filter?.state)
-            filters["outlets.state"] = filter.state;
+            filters["outlet.state"] = filter.state;
+        console.log(filters);
+
+        const today = new Date();
             
         const catalogs = await CatalogModel.aggregate([
             {
-                $lookup: {
+                $project: {
+                    vendorId: 1,
+                    title: 1,
+                    outlets: 1,
+                    pages: 1,
+                    outletCopy : "$outlets",
+                    catalogCategoryId: 1,
+                    expiry: 1,
+                    startDate: 1,
+                    status: 1           }
+            },
+            {
+                $lookup:{
                     from: 'vendoroutlets',
                     localField: 'outlets',
                     foreignField: '_id',
@@ -54,26 +71,72 @@ export class CatalogResolver {
                 }
             },
             {
-                $lookup: {
+                $lookup:{
                     from: 'vendors',
                     localField: 'vendorId',
                     foreignField: '_id',
-                    as: 'vendorId'
+                    as: 'vendor'
                 }
             },
             {
                 $unwind: {
-                    path: "$vendorId"
+                    path: "$vendor",
                 }
             },
             {
+                $unwind: {
+                    path: "$outletCopy",
+                }
+            },
+            {
+                $lookup: {
+                    from: 'vendoroutlets',
+                    localField: 'outletCopy',
+                    foreignField: '_id',
+                    as: 'outlet'
+                }
+            },
+            {
+                $unwind: {
+                    path: "$outlet",
+                }
+            },
+            {
+                $sort: {
+                    "outlet.state": 1,
+                    "vendor.grade": 1
+                }
+            },
+            // {
+            //     $group: {
+            //         _id: "$outlet.state",
+            //         state: { $first: "$outlet.state"},
+            //         catalogs: {
+            //           $push: {
+            //             id: "$catalogCategoryId",
+            //             title: "$title",
+            //             outletName: "$outlet.name",
+            //             vendor: {
+            //               id: "$vendor._id",
+            //               logo: "$vendor.logo"
+            //             },
+            //             pages: "$pages",
+            //             outlets: "$outletCopy",
+            //             expiry: "$expiry"
+            //           }
+            //         }
+            //     }
+            // },
+            {
                 $match:{
-                //    expiry: { $gte : new Date() },
+                    status: "ACCEPTED",
+                    expiry: { $gte : today },
+                    startDate: { $lte : today },
                     ...filters
                 }
             }
         ]);
-        
+
         return catalogs;
     }
     
@@ -82,6 +145,26 @@ export class CatalogResolver {
         @Arg("id") id : String
     ): Promise<Catalog> {
         return await CatalogModel.findById(id);
+    }
+    
+    @Query(() => [CatalogOutput])
+    async catalogRequests(): Promise<CatalogOutput[]> {
+        return await CatalogModel.find({status: CatalogStatus.PENDING},"id title vendorId startDate")
+        .populate("vendorId","id shopname");
+    }
+
+    @Mutation(() => Boolean)
+    async catalogAction(
+        @Arg("id") id: string,
+        @Arg("action") action: string,
+    ): Promise<Boolean> {
+        const status = action == "approve" ? CatalogStatus.ACCEPTED : CatalogStatus.REJECTED;
+        const result = await CatalogModel.findByIdAndUpdate(id,{
+            $set:{
+                status
+            }
+        })
+        return result ? true : false;
     }
 
     @Mutation(() => Catalog)
@@ -143,7 +226,8 @@ export class CatalogResolver {
 
         await CatalogModel.findByIdAndUpdate(pages.catalogId,{
             $set: {
-                pages: _pages
+                pages: _pages,
+                status: CatalogStatus.PENDING
             }
         })
 

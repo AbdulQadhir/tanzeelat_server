@@ -14,7 +14,7 @@ export class AgentResolver {
     }
 
     @Query(() => Agent)
-    async AgentDt(
+    async agentDt(
         @Arg("id") id : String
     ): Promise<Agent> {
         const agent = await AgentModel.findById(id);
@@ -41,7 +41,8 @@ export class AgentResolver {
                 password: input.password,
                 email:input.email,
                 phone:input.phone,
-                roles:input.roles
+                roles:input.roles,
+                accessVendors:input.accessVendors
             }
         });
         return result;

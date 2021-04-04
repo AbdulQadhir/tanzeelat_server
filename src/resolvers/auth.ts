@@ -6,11 +6,12 @@ import SuperAdminModel from "../models/SuperAdmin";
 import VendorModel from "../models/Vendor";
 import { Resolver, Query, Arg } from "type-graphql"
 import { Roles } from "../enums/roles.enum";
+import { States } from "../enums/state.enum";
 
 const fs   = require('fs');
 const jwt  = require('jsonwebtoken');
 
-function getToken (userId : string, roles: string) {
+function getToken (userId : string, roles: [string]) {
     var privateKEY  = fs.readFileSync('src/keys/private.key', 'utf8');
     var i  = 'tanzeelat';          // Issuer 
     var s  = 'tanzeelat';        // Subject 
@@ -48,6 +49,19 @@ export const checkVendorAccess = async (vendorId: string, userId: string) => {
     else return false;
 }
 
+export const accessibleVendorList = async (userId: string) => {
+
+    const admin = await SuperAdminModel.findById(userId);
+    if(admin) return ["all"];
+    
+    const agent = await AgentModel.findById(userId);
+    if(agent){
+        return agent.accessVendors || [];
+    }
+
+    return [];
+}
+
 @Resolver()
 export class AuthResolver {
     @Query(() => LoginOutput)
@@ -60,7 +74,8 @@ export class AuthResolver {
             if(admin.password == input.password)
                 return {
                     token: getToken(admin._id, admin.roles),
-                    roles: admin.roles
+                    roles: admin.roles,
+                    userType: "SUPERADMIN",
                 }
             else
                 return {
@@ -74,7 +89,8 @@ export class AuthResolver {
                 if(agent.password == input.password)
                     return {
                         token: getToken(agent._id, agent.roles),
-                        roles: agent.roles
+                        roles: agent.roles,
+                        userType: "AGENT",
                     }
                 else
                     return {
@@ -87,8 +103,10 @@ export class AuthResolver {
                 {
                     if(vendor.password == input.password)
                         return {
-                            token: input.email,
-                            roles: []
+                            token: getToken(vendor._id, [Roles.VendorManageRole]),
+                            roles: [Roles.VendorManageRole],
+                            userType: "VENDOR",
+                            id: vendor._id
                         }
                     else
                         return {
@@ -106,6 +124,11 @@ export class AuthResolver {
     @Query(() => [String])
     getAccessRoles(): String[] {
         return Object.values(Roles);
+    }
+
+    @Query(() => [String])
+    getStates(): String[] {
+        return Object.values(States);
     }
 
 }

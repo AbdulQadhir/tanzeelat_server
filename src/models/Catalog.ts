@@ -2,6 +2,7 @@ import { prop } from "@typegoose/typegoose";
 import { Field, ID, ObjectType } from "type-graphql";
 import Mongoose, { Model, Schema  } from "mongoose"
 import { VendorOutlet } from "./VendorOutlet";
+import { CatalogStatus } from "../enums/catalogstatus.enum";
 
 @ObjectType({ description: "The Catalog model" })
 export class Catalog {
@@ -19,11 +20,19 @@ export class Catalog {
 
   @prop()
   @Field()
+  startDate: Date;
+
+  @prop()
+  @Field()
   expiry: Date;
 
   @prop()
   @Field()
   vendorId: string;
+
+  @prop()
+  @Field()
+  status: string;
 
   @prop()
   @Field()
@@ -40,7 +49,9 @@ export class Catalog {
 
 const catalogSchema = new Schema({
   title: String,
+  startDate: Date,
   expiry: Date,
+  status: { type: String, default: CatalogStatus.PENDING },
   vendorId: { type: Mongoose.Types.ObjectId, ref: "Vendor" },
   catalogCategoryId: { type: Mongoose.Types.ObjectId, ref: "CatalogCategories" },
   outlets: [{ type: Mongoose.Types.ObjectId, ref: "VendorOutlet" }],

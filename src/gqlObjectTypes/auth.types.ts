@@ -19,6 +19,12 @@ export class LoginOutput {
 
   @Field(()=>[String], {nullable: true})
   roles?: string[];
+  
+  @Field({nullable: true})
+  userType?: string;
+  
+  @Field({nullable: true})
+  id?: string;
 
   @Field({nullable: true})
   error?: string;

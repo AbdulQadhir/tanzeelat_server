@@ -14,6 +14,9 @@ export class CatalogInput {
     vendorId: string;
 
     @Field()
+    startDate: string;
+
+    @Field()
     expiry: string;
 
     @Field()
@@ -35,10 +38,19 @@ export class CatalogOutput {
   title: string;
 
   @Field()
+  startDate: Date;
+
+  @Field()
   expiry: Date;
+
+  @Field()
+  status: String;
 
   @Field(() => Vendor)
   vendorId: Vendor;
+
+  @Field(() => Vendor,{nullable: true})
+  vendor: Vendor;
 
   @Field()
   catalogCategoryId: string;
@@ -46,8 +58,50 @@ export class CatalogOutput {
   @Field(() => [VendorOutlet])
   outlets: VendorOutlet[];
 
+  @Field(() => VendorOutlet,{nullable: true})
+  outlet: VendorOutlet;
+
   @Field(() => [String],{nullable: true})
   pages: string[];
+}
+
+@ObjectType({ description: "The Catalog Output" })
+export class ActiveCatalogOutput {
+  
+  @Field()
+  _id: string;
+  
+  @Field()
+  state: string;
+
+  @Field(()=>[ActiveCatalogOutputItem])
+  catalogs: ActiveCatalogOutputItem[]
+}
+
+@ObjectType({ description: "The Catalog Output" })
+export class ActiveCatalogOutputItem {
+  
+  @Field()
+  id: string;
+
+  @Field()
+  title: string;
+
+  @Field()
+  outletName: string
+
+  @Field()
+  vendor: Vendor
+
+  @Field(() => [String],{nullable: true})
+  pages: string[];
+
+  @Field(() => [VendorOutlet])
+  outlets: VendorOutlet[];
+
+  @Field()
+  expiry: Date;
+
 }
 
 @InputType({ description: "Catalog Filters" })

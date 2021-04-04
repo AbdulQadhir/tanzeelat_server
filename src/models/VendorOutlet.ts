@@ -27,7 +27,7 @@ export class VendorOutlet {
   state: string;
 
   @prop()
-  @Field()
+  @Field({nullable: true})
   location: Location;
 }
 

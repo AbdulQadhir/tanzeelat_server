@@ -96,4 +96,7 @@ export class VendorExtra {
 
     @Field({nullable: true})
     coupons?: number
+
+    @Field({nullable: true})
+    outlets?: number
 }
