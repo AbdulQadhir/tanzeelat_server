@@ -179,7 +179,28 @@ export class VendorResolver {
     async registerVendor(
         @Arg("input") input: AddVendorInput
     ): Promise<Vendor> {
-        const user = new VendorModel({...input});
+        let img = "";
+
+        if(input.logo)
+        {
+            
+            const s3 = new AWS.S3({
+                accessKeyId: ID,
+                secretAccessKey: SECRET
+            });
+    
+            const { createReadStream, filename, mimetype } = await input.logo;
+
+            const { Location } = await s3.upload({ // (C)
+                Bucket: BUCKET_NAME,
+                Body: createReadStream(),               
+                Key: `${uuidv4()}${path.extname(filename)}`,  
+                ContentType: mimetype                   
+            }).promise();       
+
+            img = Location;
+        }
+        const user = new VendorModel({...input,logo:img});
 
        // const hashedPass = await bcrypt.hash(input.password, saltRounds);
       //  user.password = hashedPass;

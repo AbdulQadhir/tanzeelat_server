@@ -21,9 +21,6 @@ export class AddVendorInput {
     shopname: string;
   
     @Field()
-    category: string;
-  
-    @Field()
     tradelicense: string;
   
     @Field()
