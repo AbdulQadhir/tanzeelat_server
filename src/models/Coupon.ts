@@ -41,6 +41,10 @@ export class Coupon {
   outlets: string[];
 
   @prop()
+  @Field({nullable: true}) 
+  menu: string;
+
+  @prop()
   @Field({nullable: true})
   userCouponId: string;
 }
@@ -52,7 +56,8 @@ const couponSchema = new Schema({
   endDate: Date,
   vendorId: { type: Mongoose.Types.ObjectId, ref: "Vendor" },
   couponCategoryId: { type: Mongoose.Types.ObjectId, ref: "CouponCategories" },
-  outlets: [{ type: Mongoose.Types.ObjectId, ref: "VendorOutlet" }]
+  outlets: [{ type: Mongoose.Types.ObjectId, ref: "VendorOutlet" }],
+  menu: String
 });
 
 const CouponModel : Model<any> = Mongoose.model('Coupon', couponSchema);
