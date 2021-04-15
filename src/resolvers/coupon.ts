@@ -160,6 +160,7 @@ export class CouponResolver {
     async addCoupon(
         @Arg("input") input: CouponInput
     ): Promise<Coupon> {
+        console.log(input);
         let menu = "";
         if(input.menu)
         {
@@ -196,8 +197,7 @@ export class CouponResolver {
                 startDate: input.startDate,
                 endDate: input.endDate,
                 couponCategoryId: input.couponCategoryId,
-                outlets: input.outlets,
-                menu:input.menu  
+                outlets: input.outlets
             }
         } 
         if(input.menu)
