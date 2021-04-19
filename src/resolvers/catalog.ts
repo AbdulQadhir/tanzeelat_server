@@ -42,7 +42,11 @@ export class CatalogResolver {
         if(filter?.category)
             filters.catalogCategoryId = Types.ObjectId(filter.category);
         if(filter?.search)
-            filters.title = { "$regex": filter.search, "$options": "i" }
+            filters["$or"] = [
+                                {title: { "$regex": filter.search, "$options": "i" }},
+                                {"outlet.name": { "$regex": filter.search, "$options": "i" }},
+                                {"outlet.state": { "$regex": filter.search, "$options": "i" }}
+                            ]
         if(filter?.state)
             filters["outlet.state"] = filter.state;
         console.log(filters);
@@ -136,6 +140,114 @@ export class CatalogResolver {
                 }
             }
         ]);
+
+        return catalogs;
+    }
+    
+    @Query(() => [CatalogOutput])
+    async nearCatalogs(
+        @Arg("coords") coords: String
+    ): Promise<CatalogOutput[]> {
+        let _coords = [];
+        _coords[0] = parseFloat(coords.split(",")[0] || "") || 0;
+        _coords[1] = parseFloat(coords.split(",")[1] || "") || 0;
+        console.log(_coords);
+
+        const today = new Date();
+
+        const catalogs = await CatalogModel.aggregate([
+            {
+                $project: {
+                    vendorId: 1,
+                    title: 1,
+                    outlets: 1,
+                    pages: 1,
+                    outletCopy : "$outlets",
+                    catalogCategoryId: 1,
+                    expiry: 1,
+                    startDate: 1,
+                    status: 1           
+                    }
+            },
+            {
+                $lookup:{
+                    from: 'vendoroutlets',
+                    localField: 'outlets',
+                    foreignField: '_id',
+                    as: 'outlets'
+                }
+            },
+            {
+                $lookup:{
+                    from: 'vendors',
+                    localField: 'vendorId',
+                    foreignField: '_id',
+                    as: 'vendor'
+                }
+            },
+            {
+                $unwind: {
+                    path: "$vendor",
+                }
+            },
+            {
+                $unwind: {
+                    path: "$outletCopy",
+                }
+            },
+            {
+                $lookup: {
+                    from: 'vendoroutlets',
+                    localField: 'outletCopy',
+                    foreignField: '_id',
+                    as: 'outlet'
+                }
+            },
+            {
+            $lookup: {
+                from: "vendoroutlets",
+                let: {
+                    outletId: "$outletCopy"
+                },
+                pipeline: [
+                    {
+                        $geoNear: {
+                            near: {
+                            type: "Point",
+                            coordinates: _coords
+                            },
+                            distanceField: "distance",
+                            maxDistance: 5000,
+                            spherical: true
+                        }
+                    },
+                    {
+                        $match: {
+                            $expr: { $eq: ["$outletId", "$vendoroutlets._id"] }
+                        }
+                    }
+                ],
+                as: "outlet"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$outlet",
+                }
+            },
+            {
+                $match:{
+                    status: "ACCEPTED",
+                    expiry: { $gte : today },
+                    startDate: { $lte : today },
+                }
+            }
+        ]);
+
+        catalogs.forEach(cat => {
+            console.log(cat._id)
+            console.log(cat.outlet.name)
+        });
 
         return catalogs;
     }

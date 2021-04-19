@@ -2,6 +2,7 @@ import "reflect-metadata";
 import { Resolver, Query, Arg, Mutation } from "type-graphql"
 import AgentModel, { Agent } from "../models/Agent";
 import { AgentInput } from "../gqlObjectTypes/agent.types";
+import TriggerModel from "../models/Trigger";
 
  
 @Resolver()
@@ -45,6 +46,14 @@ export class AgentResolver {
                 accessVendors:input.accessVendors
             }
         });
+        if(result){
+            const trigger = new TriggerModel({
+                refId: result._id,
+                action: "",
+                user:  result._id
+            });
+            trigger.save();
+        }
         return result;
     }
 }

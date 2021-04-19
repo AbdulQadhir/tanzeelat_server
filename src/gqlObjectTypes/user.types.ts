@@ -6,20 +6,19 @@ import { IsEmail, Length } from "class-validator";
 export class LocationInput {
 
     @Field({nullable: true})
-    lat?: string
+    lat: string
 
     @Field({nullable: true})
-    lng?: string
+    lng: string
 }
 
 @ObjectType()
 export class Location {
-
     @Field({nullable: true})
-    lat?: string
-
-    @Field({nullable: true})
-    lng?: string
+    type: string
+    
+    @Field(()=>[Number],{nullable: true})
+    coordinates?: number[]
 }
 
 @InputType({ description: "New User data" })

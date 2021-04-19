@@ -12,12 +12,39 @@ export class VendorOutletResolver {
     ): Promise<VendorOutlet[]> {
         return VendorOutletModel.find({vendorId});
     }
+    
+    @Query(() => [VendorOutlet])
+    async vendorOutletsNear(
+        @Arg("coords") coords: Number
+    ): Promise<VendorOutlet[]> {
+        console.log(coords);
+        return VendorOutletModel.aggregate([
+            {
+                $geoNear : {
+                    near: { type: "Point", coordinates: [24.223362706796227, 55.74355086474318] },
+                    distanceField: "distance",
+                    maxDistance: 20000,
+                    includeLocs: "location",
+                    spherical: true
+                }
+            }
+        ])
+    }
 
     @Mutation(() => VendorOutlet)
     async addVendorOutlet(
         @Arg("input") input: VendorOutletInput
     ): Promise<VendorOutlet> {
-        const user = new VendorOutletModel({...input});
+        let location = {
+            type : "Point",
+            coordinates : [0,0]
+        }
+        if(input.location)
+        {
+            location.coordinates[0] = parseFloat(input.location?.lat) || 0,
+            location.coordinates[1] = parseFloat(input.location?.lng) || 0
+        }
+        const user = new VendorOutletModel({...input, location});
         const result = await user.save();
         return result;
     }

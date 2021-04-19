@@ -32,8 +32,8 @@ export class VendorOutlet {
 }
 
 const LocationSchema = new Schema({
-  lat : String,
-  lng : String,
+  type: String,
+  coordinates: [Number]
 });
 
 const vendorSchema = new Schema({
