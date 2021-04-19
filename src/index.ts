@@ -35,8 +35,6 @@ const startServer = async() => {
 
     const app = express();
 
-    app.use(cors())
-
     const server = new ApolloServer({
         schema: await buildSchema({
             resolvers: [
@@ -85,6 +83,7 @@ const startServer = async() => {
     })
 
     app.use(graphqlUploadExpress({ maxFiles: 30 }));
+    app.use(cors())
      
     server.applyMiddleware({ app });
 
