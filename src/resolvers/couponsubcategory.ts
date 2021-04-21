@@ -18,7 +18,8 @@ export class CouponSubCatagoriesResolver {
     async couponSubCategories(
         @Arg("id") id: string
     ): Promise<CouponSubCategories[]> {
-        const cats = await CouponSubCategoriesModel.find({couponCategory:id});
+        const cats = await CouponSubCategoriesModel.find({couponCategoryId:id});
+        console.log(cats);
         return cats;
     }
 
@@ -26,7 +27,7 @@ export class CouponSubCatagoriesResolver {
     async addCouponSubCategory(
         @Arg("input") input: CouponSubCategoryInput
     ): Promise<CouponSubCategories> {
-
+        console.log(input);
         const s3 = new AWS.S3({
             accessKeyId: ID,
             secretAccessKey: SECRET
@@ -51,9 +52,12 @@ export class CouponSubCatagoriesResolver {
 
         const item = new CouponSubCategoriesModel({
             name: input.name,
+            couponCategoryId:input.couponCategoryId,
             image
         });
+
         const result = await item.save();
+        console.log(item);
         return result;
     }
 }
