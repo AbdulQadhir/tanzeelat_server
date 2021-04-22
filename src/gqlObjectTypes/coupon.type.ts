@@ -1,4 +1,6 @@
 import { Field, InputType, ObjectType } from "type-graphql";
+import { Upload } from "./catalog.type";
+import { GraphQLUpload } from "graphql-upload";
 
 @InputType({ description: "New Coupon data" })
 export class CouponInput {
@@ -21,8 +23,14 @@ export class CouponInput {
     @Field()
     couponCategoryId: string;
 
+    @Field()
+    couponSubCategoryId: string;
+
     @Field(() => [String])
     outlets: string[];
+
+    @Field(()=> GraphQLUpload,{nullable: true})
+    menu:  Upload;
 }
 
 @ObjectType()
@@ -42,6 +50,10 @@ export class CouponUnveil {
 
     @Field({nullable: true})
     redeemed?: boolean
+
+    
+    @Field(()=> GraphQLUpload,{nullable: true})
+    menu?:  Upload
 }
 
 @ObjectType()

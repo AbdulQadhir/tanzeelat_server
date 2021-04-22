@@ -6,18 +6,22 @@ import { Vendor } from "../models/Vendor";
 import { Types } from "mongoose";
 import UserCouponModel from "../models/UserCoupon";
 import { Context } from "@apollo/client";
-
+import { v4 as uuidv4 } from 'uuid';
+const path = require("path");
+const AWS = require('aws-sdk');
+const ID = 'AKIAID3BSRIGM4OQ5J6A';
+const SECRET = '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';
+const BUCKET_NAME = 'tanzeelat';
 @Resolver()
 export class CouponResolver {
     
     @Query(() => [Vendor])
     async vendorsWithCoupons(
-        @Arg("category") categoryId : string,
+        @Arg("subcategory") subCategoryId : string,
         @Ctx() ctx: Context
     ): Promise<Vendor[]> {
 
         const userId = ctx.userId || "";
-        
 
         const vendors = await UserCouponModel.aggregate([
             {
@@ -41,7 +45,7 @@ export class CouponResolver {
             },
             {
                 $match:{
-                    "coupons.couponCategoryId": Types.ObjectId(categoryId)
+                    "coupons.couponSubCategoryId": Types.ObjectId(subCategoryId)
                 }
             },
             {
@@ -67,7 +71,8 @@ export class CouponResolver {
             },
             {
                 $project:{
-                    "shopname": "$vendor.shopname"
+                    "shopname": "$vendor.shopname",
+                    "logo": "$vendor.logo"
                 }
             }
         ]);
@@ -78,7 +83,7 @@ export class CouponResolver {
     @Query(() => [Coupon])
     async coupons(
         @Arg("vendorId") vendorId : string,
-        @Arg("categoryId") categoryId : string,
+        @Arg("subCategoryId") subCategoryId : string,
         @Ctx() ctx: Context
     ): Promise<Coupon[]> {
 
@@ -106,7 +111,7 @@ export class CouponResolver {
             },
             {
                 $match:{
-                    "coupons.couponCategoryId": Types.ObjectId(categoryId),
+                    "coupons.couponSubCategoryId": Types.ObjectId(subCategoryId),
                     "coupons.vendorId" : Types.ObjectId(vendorId),
                 }
             },
@@ -155,7 +160,25 @@ export class CouponResolver {
     async addCoupon(
         @Arg("input") input: CouponInput
     ): Promise<Coupon> {
-        const coupon = new CouponModel({...input});
+        console.log(input);
+        let menu = "";
+        if(input.menu)
+        {
+            const s3 = new AWS.S3({
+                accessKeyId: ID,
+                secretAccessKey: SECRET
+            });  
+            const { createReadStream, filename, mimetype } = await input.menu;
+            const { Location } = await s3.upload({ // (C)
+                Bucket: BUCKET_NAME,
+                Body: createReadStream(),               
+                Key: `${uuidv4()}${path.extname(filename)}`,  
+                ContentType: mimetype                   
+            }).promise();           
+            console.log(Location);
+            menu = Location;
+        }
+        const coupon = new CouponModel({...input,menu});
         const result = await coupon.save();
         return result;
     }
@@ -165,7 +188,9 @@ export class CouponResolver {
         @Arg("input") input: CouponInput,
         @Arg("id") id: string
     ): Promise<Coupon> {
-        const result = await CouponModel.findByIdAndUpdate(id,{
+        let replace : any = {};
+        replace = {
+        // const result = await CouponModel.findByIdAndUpdate(id,{
             $set:{
                 name: input.name,
                 description: input.description,
@@ -174,7 +199,42 @@ export class CouponResolver {
                 couponCategoryId: input.couponCategoryId,
                 outlets: input.outlets
             }
-        });
-        return result;
+        } 
+        if(input.menu)
+        {
+            const user = await CouponModel.findById(id);
+            
+            const s3 = new AWS.S3({
+                accessKeyId: ID,
+                secretAccessKey: SECRET
+            });
+    
+            const { createReadStream, filename, mimetype } = await input.menu;
+
+            const { Location } = await s3.upload({ // (C)
+                Bucket: BUCKET_NAME,
+                Body: createReadStream(),               
+                Key: `${uuidv4()}${path.extname(filename)}`,  
+                ContentType: mimetype                   
+            }).promise();       
+
+            if(user.menu)
+                try {
+                    await s3.deleteObject({
+                        Bucket: BUCKET_NAME,
+                        Key: user.logo.split('/').pop()
+                    }).promise()
+                    console.log("file deleted Successfully")
+                }
+                catch (err) {
+                    console.log("ERROR in file Deleting : " + JSON.stringify(err))
+                }
+            console.log(Location);
+            replace.$set["menu"] = Location;
+            } 
+        const result = await CouponModel.findByIdAndUpdate(id, replace);
+        return result;     
+        // });
+        // return result;
     }
 }

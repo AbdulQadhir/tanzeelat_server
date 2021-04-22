@@ -20,12 +20,17 @@ export class UserCouponResolver {
     async distributeCoupon(
         @Arg("id") couponId: String
     ): Promise<Number> {
-        const users = await UserModel.find({});
-        for (const user of users) {
-            const coupon = new UserCouponModel({couponId, userId: user._id});
-            await coupon.save();
+        const check = await UserCouponModel.countDocuments({couponId});
+        if(check == 0)
+        {
+            const users = await UserModel.find({});
+            for (const user of users) {
+                const coupon = new UserCouponModel({couponId, userId: user._id});
+                await coupon.save();
+            }
+            return users.length;
         }
-        return users.length;
+        return 0;
     }
 
     @Mutation(() => Boolean)
