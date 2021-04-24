@@ -9,7 +9,7 @@ import { accessibleVendorList } from "./auth";
 import { Context } from "vm";
 import VendorOutletModel from "../models/VendorOutlet";
 
-const bcrypt = require('bcrypt');
+//const bcrypt = require('bcrypt');
 //const saltRounds = 10;
 
 const fs   = require('fs');
@@ -75,10 +75,10 @@ export class VendorResolver {
         const user = await VendorModel.findOne({username: input.username});
         if(!user)
             return {
-                errors : [{message: "Invalid Login"}]
+                errors : [{message: "Invalid User"}]
             }
 
-        const match = await bcrypt.compare(input.password, user.password);
+        const match = await input.password == user.password; // await bcrypt.compare(input.password, user.password);
         if(match)
         {
             var privateKEY  = fs.readFileSync('src/keys/private.key', 'utf8');
