@@ -7,6 +7,7 @@ import { Types } from "mongoose";
 import { Context } from "vm";
 import { checkVendorAccess } from "./auth";
 import { CatalogStatus } from "../enums/catalogstatus.enum";
+import VendorOutletModel from "../models/VendorOutlet";
 
 const path = require("path");
  
@@ -151,30 +152,34 @@ export class CatalogResolver {
         let _coords = [];
         _coords[0] = parseFloat(coords.split(",")[0] || "") || 0;
         _coords[1] = parseFloat(coords.split(",")[1] || "") || 0;
-        console.log(_coords);
+      //  console.log(_coords);
 
         const today = new Date();
+       // const yesterday = new Date().setDate(new Date().getDate()-1)
 
-        const catalogs = await CatalogModel.aggregate([
+        const catalogs = await VendorOutletModel.aggregate([
             {
-                $project: {
-                    vendorId: 1,
-                    title: 1,
-                    outlets: 1,
-                    pages: 1,
-                    outletCopy : "$outlets",
-                    catalogCategoryId: 1,
-                    expiry: 1,
-                    startDate: 1,
-                    status: 1           
-                    }
+                $geoNear: {
+                    near: {
+                      type: "Point",
+                      coordinates: [24.231984319809243, 55.74341799990185]
+                    },
+                    distanceField: "distance",
+                    maxDistance: 5000,
+                    spherical: true
+                  }         
             },
             {
                 $lookup:{
-                    from: 'vendoroutlets',
-                    localField: 'outlets',
-                    foreignField: '_id',
-                    as: 'outlets'
+                    from: 'catalogs',
+                    localField: '_id',
+                    foreignField: 'outlets',
+                    as: 'catalogs'
+                }
+            },
+            {
+                $unwind: {
+                    path: "$catalogs"
                 }
             },
             {
@@ -187,67 +192,35 @@ export class CatalogResolver {
             },
             {
                 $unwind: {
-                    path: "$vendor",
+                    path: "$vendor"
                 }
             },
             {
-                $unwind: {
-                    path: "$outletCopy",
-                }
-            },
-            {
-                $lookup: {
-                    from: 'vendoroutlets',
-                    localField: 'outletCopy',
-                    foreignField: '_id',
-                    as: 'outlet'
-                }
-            },
-            {
-            $lookup: {
-                from: "vendoroutlets",
-                let: {
-                    outletId: "$outletCopy"
-                },
-                pipeline: [
-                    {
-                        $geoNear: {
-                            near: {
-                            type: "Point",
-                            coordinates: _coords
-                            },
-                            distanceField: "distance",
-                            maxDistance: 5000,
-                            spherical: true
-                        }
-                    },
-                    {
-                        $match: {
-                            $expr: { $eq: ["$outletId", "$vendoroutlets._id"] }
-                        }
+                $project: {
+                    title: "$catalogs.title",
+                    expiry: "$catalogs.expiry",
+                    status: "$catalogs.status",
+                    startDate: "$catalogs.startDate",
+                    pages: "$catalogs.pages",
+                    "vendor._id" : 1,
+                    "vendor.shopname": 1,
+                    "vendor.logo": 1,
+                    "vendor.outlets": 1,
+                    outlet: {
+                      "name": "$name",
+                      "state": "$state",
+                      "location": "$location"
                     }
-                ],
-                as: "outlet"
-                }
-            },
-            {
-                $unwind: {
-                    path: "$outlet",
                 }
             },
             {
                 $match:{
                     status: "ACCEPTED",
                     expiry: { $gte : today },
-                    startDate: { $lte : today },
+                    startDate: { $lte : today }
                 }
             }
         ]);
-
-        catalogs.forEach(cat => {
-            console.log(cat._id)
-            console.log(cat.outlet.name)
-        });
 
         return catalogs;
     }
