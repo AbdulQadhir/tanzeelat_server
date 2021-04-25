@@ -162,7 +162,7 @@ export class CatalogResolver {
                 $geoNear: {
                     near: {
                       type: "Point",
-                      coordinates: [24.231984319809243, 55.74341799990185]
+                      coordinates: _coords
                     },
                     distanceField: "distance",
                     maxDistance: 5000,
