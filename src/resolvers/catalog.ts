@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import { Resolver, Query, Arg, Mutation, Ctx } from "type-graphql"
 import CatalogModel, { Catalog } from "../models/Catalog";
-import { CatalogInput, UpdPagesInput, UploadRespType, CatalogFilters, CatalogOutput } from "../gqlObjectTypes/catalog.type";
+import { CatalogInput, UpdPagesInput, UploadRespType, CatalogFilters, CatalogOutput, ActiveCatalogOutput } from "../gqlObjectTypes/catalog.type";
 import { v4 as uuidv4 } from 'uuid';
 import { Types } from "mongoose";
 import { Context } from "vm";
@@ -32,10 +32,10 @@ export class CatalogResolver {
         return await CatalogModel.find({vendorId});
     }
     
-    @Query(() => [CatalogOutput])
+    @Query(() => [ActiveCatalogOutput])
     async activeCatalogs(
         @Arg("filter") filter: CatalogFilters
-    ): Promise<CatalogOutput[]> {
+    ): Promise<ActiveCatalogOutput[]> {
         console.log(filter);
         let filters : any = {};
         if(filter?.vendorId)
@@ -65,7 +65,8 @@ export class CatalogResolver {
                     catalogCategoryId: 1,
                     expiry: 1,
                     startDate: 1,
-                    status: 1           }
+                    status: 1           
+                }
             },
             {
                 $lookup:{
@@ -112,26 +113,6 @@ export class CatalogResolver {
                     "vendor.grade": 1
                 }
             },
-            // {
-            //     $group: {
-            //         _id: "$outlet.state",
-            //         state: { $first: "$outlet.state"},
-            //         catalogs: {
-            //           $push: {
-            //             id: "$catalogCategoryId",
-            //             title: "$title",
-            //             outletName: "$outlet.name",
-            //             vendor: {
-            //               id: "$vendor._id",
-            //               logo: "$vendor.logo"
-            //             },
-            //             pages: "$pages",
-            //             outlets: "$outletCopy",
-            //             expiry: "$expiry"
-            //           }
-            //         }
-            //     }
-            // },
             {
                 $match:{
                     status: "ACCEPTED",
@@ -139,7 +120,28 @@ export class CatalogResolver {
                     startDate: { $lte : today },
                     ...filters
                 }
-            }
+            },
+            {
+                $group: {
+                    _id: "$outlet.state",
+                    state: { $first: "$outlet.state"},
+                    catalogs: {
+                      $push: {
+                        id: "$catalogCategoryId",
+                        title: "$title",
+                        outletName: "$outlet.name",
+                        vendor: {
+                          id: "$vendor._id",
+                          logo: "$vendor.logo",
+                          shopname: "$vendor.shopname"
+                        },
+                        pages: "$pages",
+                        outlets: "$outlets",
+                        expiry: "$expiry"
+                      }
+                    }
+                }
+            },
         ]);
 
         return catalogs;
