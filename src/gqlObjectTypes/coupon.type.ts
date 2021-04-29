@@ -49,6 +49,9 @@ export class CouponUnveil {
     coupon?: string
 
     @Field({nullable: true})
+    description?: string
+
+    @Field({nullable: true})
     redeemed?: boolean
 
     

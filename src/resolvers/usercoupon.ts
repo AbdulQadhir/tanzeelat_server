@@ -83,6 +83,7 @@ export class UserCouponResolver {
                     "couponId": "$coupon._id",
                     "name": "$user.name",
                     "coupon": "$coupon.name",
+                    "description": "$coupon.description",
                     "redeemed": 1
                 }
             }
