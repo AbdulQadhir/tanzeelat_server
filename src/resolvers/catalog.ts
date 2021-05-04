@@ -167,7 +167,6 @@ export class CatalogResolver {
                       coordinates: _coords
                     },
                     distanceField: "distance",
-                    maxDistance: 500000,
                     spherical: true
                   }         
             },
