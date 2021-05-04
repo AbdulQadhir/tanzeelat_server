@@ -26,6 +26,9 @@ export class VendorOutlet {
   @Field()
   state: string;
 
+  @Field({nullable: true})
+  distance: string;
+
   @prop()
   @Field({nullable: true})
   location: Location;

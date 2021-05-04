@@ -167,7 +167,7 @@ export class CatalogResolver {
                       coordinates: _coords
                     },
                     distanceField: "distance",
-                    maxDistance: 5000,
+                    maxDistance: 500000,
                     spherical: true
                   }         
             },
@@ -211,7 +211,8 @@ export class CatalogResolver {
                     outlet: {
                       "name": "$name",
                       "state": "$state",
-                      "location": "$location"
+                      "location": "$location",
+                      "distance": "$distance",
                     }
                 }
             },
@@ -221,6 +222,9 @@ export class CatalogResolver {
                     expiry: { $gte : today },
                     startDate: { $lte : today }
                 }
+            },
+            {
+                $limit: 7
             }
         ]);
 
