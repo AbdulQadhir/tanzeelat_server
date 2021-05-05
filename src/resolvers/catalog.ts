@@ -167,7 +167,6 @@ export class CatalogResolver {
                       coordinates: _coords
                     },
                     distanceField: "distance",
-                    minDistance: 0,
                     spherical: true
                   }         
             },
