@@ -18,15 +18,15 @@ export class CouponResolver {
     @Query(() => [Vendor])
     async vendorsWithCoupons(
         @Arg("subcategory") subCategoryId : string,
-        @Ctx() ctx: Context
+       // @Ctx() ctx: Context
     ): Promise<Vendor[]> {
 
-        const userId = ctx.userId || "";
+       // const userId = ctx.userId || "";
 
         const vendors = await UserCouponModel.aggregate([
             {
                 $match:{
-                    userId: Types.ObjectId(userId),
+                //    userId: Types.ObjectId(userId),
                     redeemed: false
                 }
             },
