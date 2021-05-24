@@ -57,7 +57,6 @@ export class CatalogResolver {
         const catalogs = await CatalogModel.aggregate([
             {
                 $project: {
-                    catalogId: "$_id",
                     vendorId: 1,
                     title: 1,
                     outlets: 1,
@@ -124,12 +123,8 @@ export class CatalogResolver {
             },
             {
                 $group: {
-                    _id: {
-                        "state" : "$outlet.state",
-                        "catalogId" : "$catalogId"
-                    },
+                    _id: "$outlet.state",
                     state: { $first: "$outlet.state"},
-                    catalogId: { $first: "$catalogId" },
                     catalogs: {
                       $push: {
                         id: "$catalogCategoryId",
@@ -147,15 +142,6 @@ export class CatalogResolver {
                     }
                 }
             },
-            {
-                $$group:{
-                    _id: "$catalogId",
-                    state: { $first: "$state" },
-                    catalogs: {
-                        $push: "$catalogs"
-                    }
-                }
-            }
         ]);
 
         return catalogs;
