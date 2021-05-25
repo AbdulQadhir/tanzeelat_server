@@ -34,7 +34,8 @@ export class CatalogResolver {
     
     @Query(() => [ActiveCatalogOutput])
     async activeCatalogs(
-        @Arg("filter") filter: CatalogFilters
+        @Arg("filter") filter: CatalogFilters,
+        @Arg("state") state: string
     ): Promise<ActiveCatalogOutput[]> {
         console.log(filter);
         let filters : any = {};
@@ -63,6 +64,7 @@ export class CatalogResolver {
                     pages: 1,
                     outletCopy : "$outlets",
                     catalogCategoryId: 1,
+                    catalogId: "$_id",
                     expiry: 1,
                     startDate: 1,
                     status: 1           
@@ -123,11 +125,16 @@ export class CatalogResolver {
             },
             {
                 $group: {
-                    _id: "$outlet.state",
-                    state: { $first: "$outlet.state"},
+                    _id: {
+                      state: "$outlet.state",
+                      catalogId: "$catalogId"
+                    },
+                    catalogId: { $first: "$catalogId" },
+                    state: { $first: "$outlet.state" },
                     catalogs: {
-                      $push: {
-                        id: "$catalogCategoryId",
+                      $first: {
+                        id: "$catalogId",
+                        catalogCategoryId: "$catalogCategoryId",
                         title: "$title",
                         outletName: "$outlet.name",
                         vendor: {
@@ -142,6 +149,17 @@ export class CatalogResolver {
                     }
                 }
             },
+            {
+                $group: {
+                    _id: "$state",
+                    state: {
+                        $first: "$state"
+                    },
+                    catalogs: {
+                      $push: "$catalogs"
+                    }
+                }
+            }
         ]);
 
         return catalogs;
