@@ -38,6 +38,7 @@ export class CatalogResolver {
         @Arg("state") state: string
     ): Promise<ActiveCatalogOutput[]> {
         console.log(filter);
+        console.log(state);
         let filters : any = {};
         if(filter?.vendorId)
             filters["vendor._id"] = Types.ObjectId(filter.vendorId);
