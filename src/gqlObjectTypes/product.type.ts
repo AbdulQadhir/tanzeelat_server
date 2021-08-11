@@ -10,6 +10,12 @@ export class ProductInput {
     @Field()
     name: string;
 
+    @Field({ nullable: true })
+    price?: number;
+
+    @Field({ nullable: true })
+    offerPrice?: number;
+
     @Field()
     vendorId: string;
 

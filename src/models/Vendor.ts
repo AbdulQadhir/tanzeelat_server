@@ -79,6 +79,14 @@ export class Vendor {
   logo: string;
 
   @prop()
+  @Field({nullable: true})
+  about?: string;
+
+  @prop()
+  @Field({nullable: true})
+  subTitle: string;
+
+  @prop()
   @Field()
   grade: number;
 }

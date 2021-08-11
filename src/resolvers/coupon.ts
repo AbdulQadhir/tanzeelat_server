@@ -1,12 +1,14 @@
 import "reflect-metadata";
 import { Resolver, Query, Arg, Mutation, Ctx, } from "type-graphql"
 import CouponModel, { Coupon } from "../models/Coupon";
-import { CouponInput, CouponSummary } from "..//gqlObjectTypes/coupon.type";
-import { Vendor } from "../models/Vendor";
+import { CouponFilterInput, CouponFilterOutput, CouponInput, CouponSummary } from "..//gqlObjectTypes/coupon.type";
 import { Types } from "mongoose";
 import UserCouponModel from "../models/UserCoupon";
 import { Context } from "@apollo/client";
 import { v4 as uuidv4 } from 'uuid';
+import VendorOutletModel from "../models/VendorOutlet";
+import computeDistance from "../utils/Geo";
+
 const path = require("path");
 const AWS = require('aws-sdk');
 const ID = 'AKIAID3BSRIGM4OQ5J6A';
@@ -15,44 +17,71 @@ const BUCKET_NAME = 'tanzeelat';
 @Resolver()
 export class CouponResolver {
     
-    @Query(() => [Vendor])
-    async vendorsWithCoupons(
-        @Arg("subcategory") subCategoryId : string,
+    @Query(() => [CouponFilterOutput])
+    async couponsWithFilter(
+        @Arg("filter") filter : CouponFilterInput,
        // @Ctx() ctx: Context
-    ): Promise<Vendor[]> {
+    ): Promise<CouponFilterOutput[]> {
 
        // const userId = ctx.userId || "";
 
-        const vendors = await UserCouponModel.aggregate([
+       const filterState = filter.state != "" ? {
+           "state" : filter.state
+       } : {};
+
+       const filterDistance : any = filter.coordinates ? {
+            $geoNear: {
+                near: { type: "Point", coordinates: filter.coordinates },
+                distanceField: "distance",
+                spherical: true
+            }
+        } : {};
+
+       let aggregation = [
             {
-                $match:{
-                //    userId: Types.ObjectId(userId),
-                    redeemed: false
+                $match: {
+                    ...filterState
                 }
             },
             {
                 $lookup:{
                     from: 'coupons',
-                    localField: 'couponId',
-                    foreignField: '_id',
-                    as: 'coupons'
+                    localField: '_id',
+                    foreignField: 'outlets',
+                    as: 'coupon'
                 }
             },
             {
                 $unwind:{
-                    path: "$coupons"
+                    path: "$coupon",
+                    preserveNullAndEmptyArrays: false
                 }
             },
             {
                 $match:{
-                    "coupons.couponSubCategoryId": Types.ObjectId(subCategoryId)
+                    "coupon.couponCategoryId": Types.ObjectId(filter.id)
                 }
             },
             {
                 $group:{
-                    _id: "$coupons.vendorId",
+                    _id: "$coupon._id",
+                    outletname: {
+                    "$first": "$name",
+                    },
+                    place: {
+                    "$first": "$place"
+                    },
+                    distance: {
+                    "$first": "$distance"
+                    },
+                    count: {
+                    "$sum": 1
+                    },
                     vendorId: {
-                      $first: "$coupons.vendorId"
+                    "$first": "$vendorId"
+                    },
+                    coupon: {
+                    "$first" : "$coupon"
                     }
                 }
             },
@@ -71,13 +100,46 @@ export class CouponResolver {
             },
             {
                 $project:{
-                    "shopname": "$vendor.shopname",
-                    "logo": "$vendor.logo"
+                    distance:1,
+                    "vendor._id": "$vendor._id",
+                    "vendor.shopname": "$vendor.shopname",
+                    "vendor.logo": "$vendor.logo",
+                    "coupon.name": "$coupon.name",
+                    "coupon.redeemLimit": "$coupon.redeemLimit",
+                    "coupon.description": "$coupon.description",
+                    "coupon.endDate": "$coupon.endDate",
+                }
+            }
+        ];
+        if(filter.coordinates)
+            aggregation = [filterDistance,...aggregation]
+
+        const coupons = await VendorOutletModel.aggregate(aggregation);
+        
+        return coupons;
+    }
+    
+    @Query(() => [Coupon])
+    async otherCouponsOfVendor(
+        @Arg("couponId") couponId : string,
+       // @Ctx() ctx: Context
+    ): Promise<Coupon[]> {
+
+       // const userId = ctx.userId || "";
+
+        const coupon = await CouponModel.findById(couponId);
+        const vendorId = coupon.vendorId;
+
+        const coupons = await CouponModel.aggregate([
+            {
+                $match: {
+                    vendorId : Types.ObjectId(vendorId),
+                    "_id": { $ne : Types.ObjectId(couponId) }
                 }
             }
         ]);
         
-        return vendors;
+        return coupons;
     }
     
     @Query(() => [Coupon])
@@ -132,9 +194,63 @@ export class CouponResolver {
     async couponsOfVendor(
         @Arg("vendorId") vendorId : string
     ): Promise<Coupon[]> {
-
         const coupons = await CouponModel.find({vendorId})
         return coupons;
+    }
+    
+    @Query(() => Coupon)
+    async couponFullDt(
+        @Arg("id") id : string,
+        @Arg("coordinates") coordinates : string
+    ): Promise<Coupon> {
+        let coupons = await CouponModel.aggregate([
+            {
+                $match: {
+                    "_id" : Types.ObjectId(id)
+                }
+            },
+            {
+                $lookup: {
+                    from: 'vendoroutlets',
+                    localField: 'outlets',
+                    foreignField: '_id',
+                    as: 'outletsDt'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'vendors',
+                    localField: 'vendorId',
+                    foreignField: '_id',
+                    as: 'vendor'
+                }
+            },
+            {
+                $unwind: {
+                    path: "$vendor"
+                }
+            }
+        ]);
+
+        if(coordinates != ""){
+
+            const strs = coordinates.split(",");
+            const userLoc = [parseFloat(strs[0]) || 0, parseFloat(strs[1]) || 0];
+
+            const tmp = coupons.length>0 && coupons[0].outletsDt?.map((outlet: any) => {
+                return {
+                    ...outlet,
+                    distance: computeDistance(userLoc,outlet?.location?.coordinates || [0,0])
+                };
+            })
+
+            let cpn = coupons.length>0 && coupons[0];
+            cpn.outletsDt = tmp;
+
+            return cpn;
+        }
+        else
+            return coupons.length>0 && coupons[0];
     }
     
     @Query(() => Coupon)
@@ -160,7 +276,7 @@ export class CouponResolver {
     async addCoupon(
         @Arg("input") input: CouponInput
     ): Promise<Coupon> {
-        console.log(input);
+        
         let menu = "";
         if(input.menu)
         {

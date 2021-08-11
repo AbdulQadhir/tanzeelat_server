@@ -112,7 +112,6 @@ export class CatalogResolver {
             },
             {
                 $sort: {
-                    "outlet.state": 1,
                     "vendor.grade": 1
                 }
             },
@@ -162,6 +161,8 @@ export class CatalogResolver {
                 }
             }
         ]);
+
+        catalogs.sort(function(x,y){ return x.state == state ? -1 : y.state == state ? 1 : 0; });
 
         return catalogs;
     }

@@ -2,43 +2,19 @@ import "reflect-metadata";
 import { Resolver, Query, Arg, Mutation } from "type-graphql"
 import UserCouponModel from "../models/UserCoupon";
 import { String } from "aws-sdk/clients/cloudsearch";
-import UserModel from "../models/User";
 import {CouponUnveil} from "../gqlObjectTypes/coupon.type"
 import { Types } from "mongoose";
  
 @Resolver()
 export class UserCouponResolver {
-    @Query(() => Number)
-    async couponsSent(
-        @Arg("id") id: String
-    ): Promise<number> {
-        const couponsSent = await UserCouponModel.count({couponId:id});
-        return couponsSent || 0;
-    }
-
-    @Mutation(() => Number)
-    async distributeCoupon(
-        @Arg("id") couponId: String
-    ): Promise<Number> {
-        const check = await UserCouponModel.countDocuments({couponId});
-        if(check == 0)
-        {
-            const users = await UserModel.find({});
-            for (const user of users) {
-                const coupon = new UserCouponModel({couponId, userId: user._id});
-                await coupon.save();
-            }
-            return users.length;
-        }
-        return 0;
-    }
-
     @Mutation(() => Boolean)
     async redeemCoupon(
-        @Arg("id") id: String
+        @Arg("couponId") couponId: String,
+        @Arg("userId") userId: String,
     ): Promise<Boolean> {
-        const result = await UserCouponModel.findByIdAndUpdate(id, {redeemed: true});
-        return result ? true : false;
+        const coupon = new UserCouponModel({couponId, userId});
+        await coupon.save();
+        return coupon ? true : false;
     }
 
     @Query(() => CouponUnveil)

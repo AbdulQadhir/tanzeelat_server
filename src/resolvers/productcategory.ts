@@ -14,6 +14,21 @@ export class ProductCatagoriesResolver {
         return cats;
     }
 
+    @Query(() => [ProductCategories])
+    async productCategoriesDt(): Promise<ProductCategories[]> {
+        const cats = await ProductCategoriesModel.aggregate([
+            {
+                $lookup: {
+                    from: 'productsubcategories',
+                    localField: '_id',
+                    foreignField: 'productCategoryId',
+                    as: 'subcategories'
+                }
+            }
+        ]);
+        return cats;
+    }
+
     @Query(() => [ProductCategoryListOutput])
     async productCategoryList(): Promise<ProductCategoryListOutput[]> {
         const cats = await ProductSubCategoriesModel.aggregate([

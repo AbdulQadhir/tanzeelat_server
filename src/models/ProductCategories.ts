@@ -1,6 +1,7 @@
 import { prop } from "@typegoose/typegoose";
 import { Field, ID, ObjectType } from "type-graphql";
 import Mongoose, { Model, Schema } from "mongoose"
+import { ProductSubCategories } from "./ProductSubCategory";
 
 @ObjectType({ description: "The Product Category model" })
 export class ProductCategories {
@@ -20,6 +21,10 @@ export class ProductCategories {
   @prop()
   @Field({nullable: true})
   image: string;
+
+  @prop()
+  @Field(()=>[ProductSubCategories],{nullable: true})
+  subcategories?: ProductSubCategories[];
 }
 
 const productCategorySchema = new Schema({

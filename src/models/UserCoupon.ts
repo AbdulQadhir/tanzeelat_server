@@ -21,16 +21,12 @@ export class UserCoupon {
   @Field()
   couponId: string;
 
-  @prop()
-  @Field({nullable: true})
-  redeemed?: boolean;
 }
 
 const userCouponSchema = new Schema({
   userId: { type: Mongoose.Types.ObjectId, ref: "User" },
-  couponId: { type: Mongoose.Types.ObjectId, ref: "Coupon" },
-  redeemed: {type: Boolean, default: false}
-});
+  couponId: { type: Mongoose.Types.ObjectId, ref: "Coupon" }
+},{timestamps: true});
 
 const UserCouponModel : Model<any> = Mongoose.model('UserCoupon', userCouponSchema);
 

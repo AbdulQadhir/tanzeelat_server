@@ -12,6 +12,13 @@ export class VendorOutletResolver {
     ): Promise<VendorOutlet[]> {
         return VendorOutletModel.find({vendorId});
     }
+
+    @Query(() => VendorOutlet)
+    async vendorOutletDt(
+        @Arg("id") id: String
+    ): Promise<VendorOutlet> {
+        return VendorOutletModel.findOne({_id:id});
+    }
     
     @Query(() => [VendorOutlet])
     async vendorOutletsNear(
@@ -46,6 +53,32 @@ export class VendorOutletResolver {
         }
         const user = new VendorOutletModel({...input, location});
         const result = await user.save();
+        return result;
+    }
+
+    @Mutation(() => VendorOutlet)
+    async updVendorOutlet(
+        @Arg("input") input: VendorOutletInput,
+        @Arg("id") id: string
+    ): Promise<VendorOutlet> {
+        let location = {
+            type : "Point",
+            coordinates : [0,0]
+        }
+        if(input.location)
+        {
+            location.coordinates[0] = parseFloat(input.location?.lat) || 0,
+            location.coordinates[1] = parseFloat(input.location?.lng) || 0
+        }
+        const result = await VendorOutletModel.findByIdAndUpdate(id,{
+            $set:{
+                name: input.name,
+                state: input.state,
+                place:input.place,
+                location:location,
+                workingHours:input.workingHours
+            }
+        });
         return result;
     }
 }

@@ -1,12 +1,12 @@
 import "reflect-metadata";
 import { Resolver, Query, Arg, Mutation } from "type-graphql"
-import { ProductFilters, ProductInput, ProductListResponse, ProductOutput } from "../gqlObjectTypes/product.type";
+import { ProductFilters, ProductInput, ProductListResponse } from "../gqlObjectTypes/product.type";
 import { v4 as uuidv4 } from 'uuid';
 import ProductModel, { Product } from "../models/Products";
 import { Types } from "mongoose";
 
 const path = require("path");
- 
+
 const ID = 'AKIAID3BSRIGM4OQ5J6A';
 const SECRET = '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';
 
@@ -15,14 +15,40 @@ const AWS = require('aws-sdk');
 
 @Resolver()
 export class ProductResolver {
-    
-    @Query(() => [ProductOutput])
+    @Query(() => [Product])
     async allProducts(
         @Arg("productSubCategoryId") productSubCategoryId: string,
         @Arg("filter") filter: ProductFilters
-    ): Promise<ProductOutput[]> {
-        console.log(filter);
-        return await ProductModel.find({productSubCategoryId}).populate("vendorId");
+    ): Promise<Product[]> {
+        const products = await ProductModel.aggregate([
+            {
+                $match:{ 
+                    'productSubCategoryId' : Types.ObjectId(productSubCategoryId)
+                }
+            },
+            {
+                $lookup: {
+                    from: 'vendors',
+                    localField: 'vendorId',
+                    foreignField: '_id',
+                    as: 'vendor'
+                }
+            },
+            {
+                $unwind: {
+                    path: "$vendor"
+                }
+            },
+            {
+                $match:{ 
+                    $or : [
+                        {'name' :            { '$regex' : filter.name || '', '$options' : 'i' }},
+                        {'vendor.shopname' : { '$regex' : filter.name || '', '$options' : 'i' }}
+                    ]
+                },
+            }
+        ]);
+        return products;
     }
     
     @Query(() => [ProductListResponse])
@@ -43,6 +69,7 @@ export class ProductResolver {
                       },
                     products: {
                       "$push": { 
+                        id: "$_id",
                         name: "$name",
                         image: "$image"
                       }
@@ -101,6 +128,8 @@ export class ProductResolver {
 
         const product = new ProductModel({
             name: input.name,
+            price: input.price,
+            offerPrice: input.offerPrice,
             vendorId: input.vendorId,
             productCategoryId: input.productCategoryId,
             productSubCategoryId: input.productSubCategoryId,

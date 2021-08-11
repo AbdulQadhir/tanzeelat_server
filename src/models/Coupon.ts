@@ -1,6 +1,8 @@
 import { prop } from "@typegoose/typegoose";
 import { Field, ID, ObjectType } from "type-graphql";
 import Mongoose, { Model, Schema  } from "mongoose"
+import { VendorOutlet } from "./VendorOutlet";
+import { Vendor } from "./Vendor";
 
 @ObjectType({ description: "The Coupon model" })
 export class Coupon {
@@ -43,6 +45,14 @@ export class Coupon {
   @prop()
   @Field(() => [String])
   outlets: string[];
+
+  @prop()
+  @Field(() => [VendorOutlet],{nullable: true})
+  outletsDt: VendorOutlet[];
+
+  @prop()
+  @Field(() => Vendor,{nullable: true})
+  vendor: Vendor;
 
   @prop()
   @Field({nullable: true}) 

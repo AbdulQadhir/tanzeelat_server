@@ -1,6 +1,8 @@
 import { Field, InputType, ObjectType } from "type-graphql";
 import { Upload } from "./catalog.type";
 import { GraphQLUpload } from "graphql-upload";
+import { Vendor } from "../models/Vendor";
+import { Coupon } from "../models/Coupon";
 
 @InputType({ description: "New Coupon data" })
 export class CouponInput {
@@ -31,6 +33,19 @@ export class CouponInput {
 
     @Field(()=> GraphQLUpload,{nullable: true})
     menu:  Upload;
+}
+
+@InputType({ description: "Coupon filter" })
+export class CouponFilterInput {
+
+    @Field()
+    id: string;
+
+    @Field()
+    state: string;
+
+    @Field(()=>[Number],{nullable: true})
+    coordinates?: [Number];
 }
 
 @ObjectType()
@@ -67,4 +82,17 @@ export class CouponSummary {
 
     @Field({nullable: true})
     redeemed?: number
+}
+
+@ObjectType()
+export class CouponFilterOutput {
+
+    @Field()
+    _id?: string
+
+    @Field(()=>Vendor)
+    vendor?: Vendor
+
+    @Field(()=>Coupon)
+    coupon?: Coupon
 }

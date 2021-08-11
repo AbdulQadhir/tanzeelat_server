@@ -26,6 +26,9 @@ export class AddVendorInput {
     @Field()
     emiratesid: string;
   
+    @Field()
+    category: string;
+  
     @Field({nullable: true})
     location: LocationInput;
   
@@ -57,7 +60,37 @@ export class AddVendorInput {
   
     @Field()
     grade: string;
+  
+    @Field({ nullable: true })
+    about?: string;
   }
+
+@InputType()
+export class WorkingHoursInput {
+
+    @Field({nullable: true})
+    active: boolean
+
+    @Field({nullable: true})
+    from: string
+
+    @Field({nullable: true})
+    to: string
+}
+
+@ObjectType()
+export class WorkingHours {
+
+    @Field({nullable: true})
+    active: boolean
+
+    @Field({nullable: true})
+    from: string
+
+    @Field({nullable: true})
+    to: string
+}
+
 
 @ObjectType()
 export class VendorFieldError {

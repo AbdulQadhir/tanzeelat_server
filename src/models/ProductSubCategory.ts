@@ -18,6 +18,10 @@ export class ProductSubCategories {
   name?: string;
 
   @prop()
+  @Field({nullable: true})
+  image: string;
+
+  @prop()
   @Field()
   productCategoryId: string;
   
@@ -25,6 +29,7 @@ export class ProductSubCategories {
 
 const productSubCategorySchema = new Schema({
   name: String,
+  image: String,
   productCategoryId: { type: Mongoose.Types.ObjectId, ref: "ProductCategories" },
 });
 
