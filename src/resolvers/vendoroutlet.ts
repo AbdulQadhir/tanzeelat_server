@@ -3,7 +3,6 @@ import { VendorOutletInput } from "../gqlObjectTypes/vendoroutlet.type";
 import { Resolver, Query, Arg, Mutation } from "type-graphql"
 import VendorOutletModel, {VendorOutlet} from "../models/VendorOutlet"
 
- 
 @Resolver()
 export class VendorOutletResolver {
     @Query(() => [VendorOutlet])

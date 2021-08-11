@@ -23,6 +23,7 @@ import { WarrantyCardResolver } from "./resolvers/warrantycard";
 import { AgentResolver } from "./resolvers/agent";
 import { SuperAdminResolver } from "./resolvers/superadmin";
 import { AuthResolver } from "./resolvers/auth";
+import { VendorUserResolver } from "./resolvers/vendoruser";
 
 const fs   = require('fs');
 const jwt  = require('jsonwebtoken');
@@ -55,7 +56,8 @@ const startServer = async() => {
                 WarrantyCardResolver,
                 AgentResolver,
                 SuperAdminResolver,
-                AuthResolver
+                AuthResolver,
+                VendorUserResolver
             ]
         }),
         uploads: false,
