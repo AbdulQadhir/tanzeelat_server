@@ -24,6 +24,8 @@ import { AgentResolver } from "./resolvers/agent";
 import { SuperAdminResolver } from "./resolvers/superadmin";
 import { AuthResolver } from "./resolvers/auth";
 import { VendorUserResolver } from "./resolvers/vendoruser";
+import { HelpResolver } from "./resolvers/help";
+import { LogResolver } from "./resolvers/logs";
 
 const fs   = require('fs');
 const jwt  = require('jsonwebtoken');
@@ -57,7 +59,9 @@ const startServer = async() => {
                 AgentResolver,
                 SuperAdminResolver,
                 AuthResolver,
-                VendorUserResolver
+                VendorUserResolver,
+                HelpResolver,
+                LogResolver
             ]
         }),
         uploads: false,
@@ -73,10 +77,10 @@ const startServer = async() => {
                     try {
                         var decoded = jwt.verify(token,  publicKEY);
                         if(decoded?.userId)
-                            return {userId: decoded.userId, roles: decoded.roles || []}
+                            return {userId: decoded.userId, roles: decoded.roles || [], userType: decoded.userType}
                         //console.log("decoded",decoded?.userId);
                     } catch(err) {
-                       // console.log("err",err)
+                        console.log("err0",err)
                     }
                 }
             }

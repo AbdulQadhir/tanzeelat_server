@@ -255,9 +255,24 @@ export class CouponResolver {
     
     @Query(() => Coupon)
     async couponDt(
-        @Arg("id") id : String
+        @Arg("id") id : string
     ): Promise<Coupon> {
-        return await CouponModel.findById(id);
+        const coupons = await CouponModel.aggregate([
+            {
+                $match: {
+                    _id: Types.ObjectId(id)
+                }
+            },
+            {
+                $lookup: {
+                    from: 'vendoroutlets',
+                    localField: 'outlets',
+                    foreignField: '_id',
+                    as: 'outletsDt'
+                }
+            },
+        ]);
+        return coupons[0];
     }
     
     @Query(() => CouponSummary)
@@ -290,8 +305,7 @@ export class CouponResolver {
                 Body: createReadStream(),               
                 Key: `${uuidv4()}${path.extname(filename)}`,  
                 ContentType: mimetype                   
-            }).promise();           
-            console.log(Location);
+            }).promise();          
             menu = Location;
         }
         const coupon = new CouponModel({...input,menu});
@@ -313,7 +327,9 @@ export class CouponResolver {
                 startDate: input.startDate,
                 endDate: input.endDate,
                 couponCategoryId: input.couponCategoryId,
-                outlets: input.outlets
+                couponSubCategoryId: input.couponSubCategoryId,
+                outlets: input.outlets,
+                redeemLimit: input.redeemLimit
             }
         } 
         if(input.menu)

@@ -25,6 +25,9 @@ export class LoginOutput {
   
   @Field({nullable: true})
   id?: string;
+  
+  @Field({nullable: true})
+  vendorId?: string;
 
   @Field({nullable: true})
   error?: string;

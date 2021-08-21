@@ -3,15 +3,15 @@ import { LoginOutput } from "../gqlObjectTypes/auth.types";
 import { LoginInput } from "../gqlObjectTypes/user.types";
 import AgentModel from "../models/Agent";
 import SuperAdminModel from "../models/SuperAdmin";
-import VendorModel from "../models/Vendor";
 import { Resolver, Query, Arg } from "type-graphql"
 import { Roles } from "../enums/roles.enum";
 import { States } from "../enums/state.enum";
+import VendorUserModel from "../models/VendorUser";
 
 const fs   = require('fs');
 const jwt  = require('jsonwebtoken');
 
-function getToken (userId : string, roles: [string]) {
+function getToken (userId : string, roles: [string], userType: string) {
     var privateKEY  = fs.readFileSync('src/keys/private.key', 'utf8');
     var i  = 'tanzeelat';          // Issuer 
     var s  = 'tanzeelat';        // Subject 
@@ -25,7 +25,8 @@ function getToken (userId : string, roles: [string]) {
     };
     var payload = {
         userId,
-        roles
+        roles,
+        userType
     };
     var token = jwt.sign(payload, privateKEY, signOptions);
     return token;
@@ -58,6 +59,11 @@ export const accessibleVendorList = async (userId: string) => {
     if(agent){
         return agent.accessVendors || [];
     }
+    
+    const vendoruser = await VendorUserModel.findById(userId);
+    if(vendoruser){
+        return [vendoruser.vendorId] || [];
+    }
 
     return [];
 }
@@ -68,12 +74,13 @@ export class AuthResolver {
     async weblogin(
         @Arg("input") input: LoginInput
     ): Promise<LoginOutput> {
+        console.log(input);
         const admin = await SuperAdminModel.findOne({email: input.email});
         if(admin)
         {
             if(admin.password == input.password)
                 return {
-                    token: getToken(admin._id, admin.roles),
+                    token: getToken(admin._id, admin.roles, "SUPERADMIN"),
                     roles: admin.roles,
                     userType: "SUPERADMIN",
                 }
@@ -88,7 +95,7 @@ export class AuthResolver {
             {
                 if(agent.password == input.password)
                     return {
-                        token: getToken(agent._id, agent.roles),
+                        token: getToken(agent._id, agent.roles, "AGENT"),
                         roles: agent.roles,
                         userType: "AGENT",
                     }
@@ -98,15 +105,16 @@ export class AuthResolver {
                     }
             }
             else{
-                const vendor = await VendorModel.findOne({username: input.email});
-                if(vendor)
+                const vendorUser = await VendorUserModel.findOne({username: input.email});
+                if(vendorUser)
                 {
-                    if(vendor.password == input.password)
+                    if(vendorUser.password == input.password)
                         return {
-                            token: getToken(vendor._id, [Roles.VendorManageRole]),
+                            token: getToken(vendorUser._id, [Roles.VendorManageRole], "VENDOR"),
                             roles: [Roles.VendorManageRole],
                             userType: "VENDOR",
-                            id: vendor._id
+                            id: vendorUser._id,
+                            vendorId: vendorUser.vendorId
                         }
                     else
                         return {

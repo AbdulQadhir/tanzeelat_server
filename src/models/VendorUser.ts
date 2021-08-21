@@ -40,8 +40,9 @@ const vendorUserSchema = new Schema({
   username: String,
   password: String,
   vendorId: { type: Mongoose.Types.ObjectId, ref: "Vendor" },
-  outlets: [{ type: Mongoose.Types.ObjectId, ref: "VendorOutlet" }]
-},{timestamps: true});
+  outlets: [{ type: Mongoose.Types.ObjectId, ref: "VendorOutlet" }],
+  active: { type: Boolean, default: true } 
+})
 
 const VendorUserModel : Model<any> = Mongoose.model('VendorUser', vendorUserSchema);
 

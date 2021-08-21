@@ -8,6 +8,7 @@ import { Context } from "vm";
 import { checkVendorAccess } from "./auth";
 import { CatalogStatus } from "../enums/catalogstatus.enum";
 import VendorOutletModel from "../models/VendorOutlet";
+import VendorUserModel from "../models/VendorUser";
 
 const path = require("path");
  
@@ -25,11 +26,67 @@ export class CatalogResolver {
         @Arg("vendorId") vendorId : string,
         @Ctx() ctx: Context
     ): Promise<Catalog[]> {
-        const access = await checkVendorAccess(vendorId, ctx.userId)
-        if(!access)
-        {}//    throw new Error("Unauthorized!");x
+        if(ctx.userType == "VENDOR"){
+            const vendorUser = await VendorUserModel.findById(ctx.userId);
+            const catalogs = await CatalogModel.aggregate([
+                {
+                    $match: {
+                        outlets: {
+                            $in: vendorUser?.outlets.map((el: Types.ObjectId) => Types.ObjectId(el.toString())) || []
+                        }
+                    }
+                }
+            ]);
+            return catalogs;
+        }
+        else{
+            const access = await checkVendorAccess(vendorId, ctx.userId)
+            if(!access)
+            {}//    throw new Error("Unauthorized!");x
 
-        return await CatalogModel.find({vendorId});
+            return await CatalogModel.find({vendorId});
+        }
+    }
+    
+    @Query(() => [Catalog])
+    async otherCatalogsOfVendor(
+        @Arg("catalogId") catalogId : string,
+    ): Promise<Catalog[]> {
+        const _tmp = await CatalogModel.findById(catalogId);
+        const vendorId = _tmp.vendorId;
+        
+        const catalogs = await CatalogModel.aggregate([
+            {
+                $match: {
+                    vendorId: Types.ObjectId(vendorId),
+                    _id: {
+                      $ne: Types.ObjectId(catalogId)
+                    }
+                }
+            },
+            {
+                $lookup: {
+                    from: 'vendoroutlets',
+                    localField: 'outlets',
+                    foreignField: '_id',
+                    as: 'outlets'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'vendors',
+                    localField: 'vendorId',
+                    foreignField: '_id',
+                    as: 'vendor'
+                }
+            },
+            {
+                $unwind: {
+                    path: "$vendor"
+                }
+            }
+        ]);
+        return catalogs;
     }
     
     @Query(() => [ActiveCatalogOutput])
@@ -40,8 +97,8 @@ export class CatalogResolver {
         console.log(filter);
         console.log(state);
         let filters : any = {};
-        if(filter?.vendorId)
-            filters["vendor._id"] = Types.ObjectId(filter.vendorId);
+        if((filter?.vendorId?.length || 0) > 0)
+            filters["vendor._id"] = { $in : filter.vendorId?.map(el=>Types.ObjectId(el)) || [] };
         if(filter?.category)
             filters.catalogCategoryId = Types.ObjectId(filter.category);
         if(filter?.search)
@@ -52,7 +109,6 @@ export class CatalogResolver {
                             ]
         if(filter?.state)
             filters["outlet.state"] = filter.state;
-        console.log(filters);
 
         const today = new Date();
             
@@ -252,9 +308,37 @@ export class CatalogResolver {
     
     @Query(() => Catalog)
     async catalogDt(
-        @Arg("id") id : String
+        @Arg("id") id : string
     ): Promise<Catalog> {
-        return await CatalogModel.findById(id);
+        const catalogs = await CatalogModel.aggregate([
+            {
+                $match: {
+                    _id: Types.ObjectId(id)
+                }
+            },
+            {
+                $lookup: {
+                    from: 'vendoroutlets',
+                    localField: 'outlets',
+                    foreignField: '_id',
+                    as: 'outlets'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'catalogcategories',
+                    localField: 'catalogCategoryId',
+                    foreignField: '_id',
+                    as: 'catalogCategoryDt'
+                }
+            },
+            {
+                $unwind: {
+                    path: "$catalogCategoryDt"
+                }
+            }
+        ]);
+        return catalogs.length>0 && catalogs[0];
     }
     
     @Query(() => [CatalogOutput])
@@ -275,6 +359,20 @@ export class CatalogResolver {
             }
         })
         return result ? true : false;
+    }
+
+    @Mutation(() => Boolean)
+    async updCatalogEnabled(
+        @Arg("catalogId") catalogId: string,
+        @Arg("enabled") enabled: Boolean
+    ): Promise<Boolean> {
+        console.log(enabled);
+        await CatalogModel.findByIdAndUpdate(catalogId,{
+            $set:{
+                enabled
+            }
+        })
+        return true;
     }
 
     @Mutation(() => Catalog)

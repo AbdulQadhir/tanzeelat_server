@@ -1,20 +1,97 @@
 import "reflect-metadata";
-import { Resolver, Query, Arg, Mutation } from "type-graphql"
+import { Resolver, Query, Arg, Mutation, Ctx } from "type-graphql"
 import UserCouponModel from "../models/UserCoupon";
 import { String } from "aws-sdk/clients/cloudsearch";
-import {CouponUnveil} from "../gqlObjectTypes/coupon.type"
+import {CouponRedeemOutput, CouponUnveil} from "../gqlObjectTypes/coupon.type"
 import { Types } from "mongoose";
- 
+import { Context } from "vm";
+import VendorUserModel from "../models/VendorUser";
+import CouponModel from "../models/Coupon";
+
+const fs   = require('fs');
+const jwt  = require('jsonwebtoken');
+const moment = require("moment");
+
 @Resolver()
 export class UserCouponResolver {
-    @Mutation(() => Boolean)
+    @Mutation(() => CouponRedeemOutput)
     async redeemCoupon(
-        @Arg("couponId") couponId: String,
-        @Arg("userId") userId: String,
-    ): Promise<Boolean> {
-        const coupon = new UserCouponModel({couponId, userId});
-        await coupon.save();
-        return coupon ? true : false;
+        @Arg("couponString") couponString: String,
+        @Ctx() ctx: Context
+    ): Promise<CouponRedeemOutput> {
+        if(couponString == "Invalid Coupon")
+            return {
+                result: false,
+                error: "Invalid Coupon"
+            };
+
+        const strs = couponString.split(";");
+        if(strs.length == 0)
+            return {
+                result: false,
+                error: "Invalid Coupon"
+            };
+
+        const couponId = strs[0];
+        const custToken = strs[1];
+
+        var userId = "";
+        var vendorUserId = ctx.userId;
+
+        var publicKEY  = fs.readFileSync('src/keys/public.key', 'utf8');
+        try {
+            var decoded = jwt.verify(custToken,  publicKEY);
+            if(decoded?.userId)
+                userId = decoded?.userId;
+        } catch(err) {
+            //console.log("err",err)
+        }
+
+        const vendorUser = await VendorUserModel.findById(vendorUserId);
+        const outletId = vendorUser.outlets[0] || "";
+
+        const coupon = await CouponModel.findById(couponId);
+        if(!coupon)
+            return {
+                result: false,
+                error: "Invalid Coupon"
+            };
+        
+        if(!coupon.outlets.includes(outletId))
+            return {
+                result: false,
+                error: "Coupon not available here"
+            };
+        
+        var now = moment();
+        if(!now > moment(coupon.expiry))
+            return {
+                result: false,
+                error: "Coupon Expired"
+            };
+
+        const exists = await UserCouponModel.countDocuments({
+            couponId,
+            userId
+        });
+
+        if(exists > 0)
+            return {
+                result: false,
+                error: "This coupon is already redeemed once"
+            };
+
+        const redeem = new UserCouponModel({
+            couponId, 
+            userId,
+            vendorUserId,
+            outletId
+        });
+        await redeem.save();
+        
+        return {
+            result: true
+        };
     }
 
     @Query(() => CouponUnveil)

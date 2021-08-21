@@ -3,13 +3,15 @@ import { Field, ID, ObjectType } from "type-graphql";
 import Mongoose, { Model, Schema  } from "mongoose"
 import { VendorOutlet } from "./VendorOutlet";
 import { CatalogStatus } from "../enums/catalogstatus.enum";
+import { Vendor } from "./Vendor";
+import { CatalogCategories } from "./CatalogCategories";
 
 @ObjectType({ description: "The Catalog model" })
 export class Catalog {
   
   @prop()
-  @Field(() => ID)
-  id: string;
+  @Field(() => ID,{nullable: true})
+  id?: string;
 
   @Field()
   _id: string;
@@ -43,8 +45,20 @@ export class Catalog {
   outlets: VendorOutlet[];
 
   @prop()
+  @Field(()=>CatalogCategories,{nullable: true})
+  catalogCategoryDt?: CatalogCategories;
+
+  @prop()
+  @Field(()=>Vendor,{nullable: true})
+  vendor?: Vendor;
+
+  @prop()
   @Field(() => [String],{nullable: true})
   pages: string[];
+
+  @prop()
+  @Field(()=>Boolean, {nullable: true})
+  enabled: Boolean;
 }
 
 const catalogSchema = new Schema({
@@ -56,6 +70,7 @@ const catalogSchema = new Schema({
   catalogCategoryId: { type: Mongoose.Types.ObjectId, ref: "CatalogCategories" },
   outlets: [{ type: Mongoose.Types.ObjectId, ref: "VendorOutlet" }],
   pages: [String],
+  enabled: { type: Boolean, default: true }
 });
 
 const CatalogModel : Model<any> = Mongoose.model('Catalog', catalogSchema);

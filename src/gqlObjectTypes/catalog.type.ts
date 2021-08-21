@@ -107,8 +107,8 @@ export class ActiveCatalogOutputItem {
 @InputType({ description: "Catalog Filters" })
 export class CatalogFilters {
 
-    @Field({nullable: true})
-    vendorId?: string;
+    @Field(()=>[String],{nullable: true})
+    vendorId?: [string];
 
     @Field({nullable: true})
     search?: string;

@@ -21,11 +21,21 @@ export class UserCoupon {
   @Field()
   couponId: string;
 
+  @prop()
+  @Field()
+  outletId: string;
+
+  @prop()
+  @Field()
+  vendorUserId: string;
+
 }
 
 const userCouponSchema = new Schema({
   userId: { type: Mongoose.Types.ObjectId, ref: "User" },
-  couponId: { type: Mongoose.Types.ObjectId, ref: "Coupon" }
+  couponId: { type: Mongoose.Types.ObjectId, ref: "Coupon" },
+  outletId: { type: Mongoose.Types.ObjectId, ref: "VendorOutlet" },
+  vendorUserId: { type: Mongoose.Types.ObjectId, ref: "VendorUser" }
 },{timestamps: true});
 
 const UserCouponModel : Model<any> = Mongoose.model('UserCoupon', userCouponSchema);

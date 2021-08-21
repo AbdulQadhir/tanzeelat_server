@@ -1,7 +1,10 @@
 import "reflect-metadata";
 import { VendorOutletInput } from "../gqlObjectTypes/vendoroutlet.type";
-import { Resolver, Query, Arg, Mutation } from "type-graphql"
+import { Resolver, Query, Arg, Mutation, Ctx } from "type-graphql"
 import VendorOutletModel, {VendorOutlet} from "../models/VendorOutlet"
+import { Context } from "vm";
+import VendorUserModel from "../models/VendorUser";
+import { Types } from "mongoose";
 
 @Resolver()
 export class VendorOutletResolver {
@@ -10,6 +13,20 @@ export class VendorOutletResolver {
         @Arg("vendorId") vendorId: String
     ): Promise<VendorOutlet[]> {
         return VendorOutletModel.find({vendorId});
+    }
+
+    @Query(() => [VendorOutlet])
+    async vendorAccessibleOutlets(
+        @Arg("vendorId") vendorId: String,
+        @Ctx() ctx: Context
+    ): Promise<VendorOutlet[]> {
+        const vendorUser = await VendorUserModel.findById(ctx.userId);
+
+        if(ctx.userType == "VENDOR"){
+            return VendorOutletModel.find({ _id: { $in: vendorUser?.outlets.map((el: Types.ObjectId) => Types.ObjectId(el.toString())) || [] }});
+        }else {
+            return VendorOutletModel.find({vendorId})
+        }
     }
 
     @Query(() => VendorOutlet)

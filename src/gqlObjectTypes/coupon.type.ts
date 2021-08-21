@@ -33,6 +33,9 @@ export class CouponInput {
 
     @Field(()=> GraphQLUpload,{nullable: true})
     menu:  Upload;
+
+    @Field(()=> Number,{nullable: true})
+    redeemLimit: Number;
 }
 
 @InputType({ description: "Coupon filter" })
@@ -72,6 +75,16 @@ export class CouponUnveil {
     
     @Field(()=> GraphQLUpload,{nullable: true})
     menu?:  Upload
+}
+
+@ObjectType()
+export class CouponRedeemOutput {
+
+    @Field({nullable: true})
+    result?: Boolean
+
+    @Field({nullable: true})
+    error?: string
 }
 
 @ObjectType()

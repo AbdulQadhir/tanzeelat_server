@@ -33,30 +33,47 @@ export class VendorResolver {
         const accessList = await accessibleVendorList(ctx.userId);
         if(accessList.length == 0) return [];
         if(accessList[0] == "all")
-            return await VendorModel.find();
+            return await VendorModel.find({active: true});
         else
             return await VendorModel.find({
-                '_id': { $in: accessList }
+                $and: [
+                    { "_id" : { $in: accessList } },
+                    { active: true } 
+                ]
             });
     }
 
     @Query(() => [Vendor])
     async allVendors(): Promise<Vendor[]> {
-        return await VendorModel.find();
+        return await VendorModel.find({active: true});
     }
 
     @Query(() => Vendor)
     async vendorDt(
-        @Arg("id") id : String
-    ): Promise<Vendor> {
+        @Arg("id") id : String,
+        @Ctx() ctx: Context
+    ): Promise<Vendor | null> {
+        const accessList = await accessibleVendorList(ctx.userId);
+        
+        if(accessList.length==0) return null;
+        
+        if(accessList[0] != 'all' && accessList.findIndex((el: { toString: () => string; }) => el.toString() == id.toString()) == -1) return null;
+        
         const vendor = await VendorModel.findById(id);
         return vendor;
     }
 
     @Query(() => VendorExtra)
     async vendorDtExtra(
-        @Arg("id") id : String
-    ): Promise<VendorExtra> {
+        @Arg("id") id : String,
+        @Ctx() ctx: Context
+    ): Promise<VendorExtra | null> {
+        const accessList = await accessibleVendorList(ctx.userId);
+        
+        if(accessList.length==0) return null;
+        
+        if(accessList[0] != 'all' && accessList.findIndex((el: { toString: () => string; }) => el.toString() == id.toString()) == -1) return null;
+        
         const catalogs = await CatalogModel.count({vendorId: id});
         const coupons = await CouponModel.count({vendorId: id});
         const outlets = await VendorOutletModel.count({vendorId: id});
@@ -208,5 +225,13 @@ export class VendorResolver {
         const result = await user.save();
 
         return result;
+    }
+
+    @Mutation(() => Boolean)
+    async delVendor(
+        @Arg("id") id: String
+    ): Promise<Boolean> {
+        await VendorModel.findByIdAndUpdate(id,{active: false});
+        return true;
     }
 }

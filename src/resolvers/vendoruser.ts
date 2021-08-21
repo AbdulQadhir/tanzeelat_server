@@ -12,7 +12,7 @@ export class VendorUserResolver {
         // @Ctx() ctx: Context
         @Arg("vendorId") vendorId : string
     ): Promise<VendorUser[]> {
-        const users = await VendorUserModel.find({vendorId: vendorId},"username");
+        const users = await VendorUserModel.find({vendorId: vendorId, active: true},"username");
         return users;
     }
 
@@ -64,5 +64,13 @@ export class VendorUserResolver {
         const user = new VendorUserModel({...input});
         const result = await user.save();
         return result;
+    }
+
+    @Mutation(() => Boolean)
+    async delVendorUser(
+        @Arg("id") id: String
+    ): Promise<Boolean> {
+        await VendorUserModel.findByIdAndUpdate(id,{active: false});
+        return true;
     }
 }
