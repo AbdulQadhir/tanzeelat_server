@@ -94,11 +94,12 @@ export class CatalogResolver {
         @Arg("filter") filter: CatalogFilters,
         @Arg("state") state: string
     ): Promise<ActiveCatalogOutput[]> {
-        console.log(filter);
-        console.log(state);
         let filters : any = {};
-        if((filter?.vendorId?.length || 0) > 0)
-            filters["vendor._id"] = { $in : filter.vendorId?.map(el=>Types.ObjectId(el)) || [] };
+        console.log(filter);
+        console.log(filter.vendorId?.filter(el => el!='').map(el=> Types.ObjectId(el)));
+
+        if((filter.vendorId?.filter(el => el!='').length || 0) > 0)
+            filters["vendor._id"] = { $in : filter.vendorId?.filter(el => el!='').map(el=> Types.ObjectId(el)) || [] };
         if(filter?.category)
             filters.catalogCategoryId = Types.ObjectId(filter.category);
         if(filter?.search)
