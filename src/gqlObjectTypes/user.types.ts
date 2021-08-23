@@ -1,4 +1,3 @@
-import { Gender } from "../enums/user.enum";
 import { Field, InputType, ObjectType } from "type-graphql";
 import { IsEmail, Length } from "class-validator";
 
@@ -36,16 +35,10 @@ export class AddUserInput {
     mobile: string;
   
     @Field()
-    emiratesId: string;
+    city: string;
   
     @Field({nullable: true})
     location: LocationInput;
-  
-    @Field({nullable: true})
-    gender: Gender;
-  
-    @Field({nullable: true})
-    ageGroup: string;
   
     @Field()
     password: string;

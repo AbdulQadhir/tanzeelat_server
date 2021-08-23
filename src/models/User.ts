@@ -1,7 +1,6 @@
 import { getModelForClass, prop } from "@typegoose/typegoose";
 import { Field, ID, ObjectType } from "type-graphql";
 import { Model } from "mongoose"
-import { Gender } from "../enums/user.enum";
 import { Location } from "../gqlObjectTypes/user.types";
 
 @ObjectType({ description: "The User model" })
@@ -28,19 +27,11 @@ export class User {
 
   @prop()
   @Field()
-  emiratesId: string;
+  city: string;
 
   @prop()
   @Field({nullable: true})
   location: Location;
-
-  @prop()
-  @Field({nullable: true})
-  gender: Gender;
-
-  @prop()
-  @Field({nullable: true})
-  ageGroup: string;
 
   @prop()
   @Field()
