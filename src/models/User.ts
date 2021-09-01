@@ -1,7 +1,6 @@
 import { getModelForClass, prop } from "@typegoose/typegoose";
 import { Field, ID, ObjectType } from "type-graphql";
 import { Model } from "mongoose"
-import { Location } from "../gqlObjectTypes/user.types";
 
 @ObjectType({ description: "The User model" })
 export class User {
@@ -30,12 +29,12 @@ export class User {
   city: string;
 
   @prop()
-  @Field({nullable: true})
-  location: Location;
+  @Field()
+  password: string;
 
   @prop()
   @Field()
-  password: string;
+  verified: boolean;
 }
 
 const UserModel : Model<any> = getModelForClass(User); 

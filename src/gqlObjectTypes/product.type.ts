@@ -33,10 +33,7 @@ export class ProductInput {
 export class ProductFilters {
 
     @Field({nullable: true})
-    name?: string;
-
-    @Field({nullable: true})
-    vendorId?: string;
+    search?: string;
 }
 
 

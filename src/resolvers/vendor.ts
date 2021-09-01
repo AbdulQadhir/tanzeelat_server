@@ -185,7 +185,6 @@ export class VendorResolver {
                     console.log("ERROR in file Deleting : " + JSON.stringify(err))
                 }
             
-            console.log(Location);
             replace.$set["logo"] = Location;
         }
 

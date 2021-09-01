@@ -47,6 +47,9 @@ export class CouponFilterInput {
     @Field()
     state: string;
 
+    @Field()
+    search: string;
+
     @Field(()=>[Number],{nullable: true})
     coordinates?: [Number];
 }
@@ -102,6 +105,9 @@ export class CouponFilterOutput {
 
     @Field()
     _id?: string
+
+    @Field(()=>Number,{nullable: true})
+    distance?: Number
 
     @Field(()=>Vendor)
     vendor?: Vendor

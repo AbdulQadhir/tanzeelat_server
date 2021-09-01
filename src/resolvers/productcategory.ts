@@ -15,7 +15,9 @@ export class ProductCatagoriesResolver {
     }
 
     @Query(() => [ProductCategories])
-    async productCategoriesDt(): Promise<ProductCategories[]> {
+    async productCategoriesDt(
+        @Arg("search") search: string
+    ): Promise<ProductCategories[]> {
         const cats = await ProductCategoriesModel.aggregate([
             {
                 $lookup: {
@@ -23,6 +25,14 @@ export class ProductCatagoriesResolver {
                     localField: '_id',
                     foreignField: 'productCategoryId',
                     as: 'subcategories'
+                }
+            },
+            {
+                $match : {
+                    $or : [
+                        {"name": { "$regex": search, "$options": "i" }},
+                        {"subcategories.name": { "$regex": search, "$options": "i" }}
+                    ]
                 }
             }
         ]);

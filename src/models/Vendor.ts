@@ -106,6 +106,7 @@ const vendorSchema = new Schema({
   contactphone: String,
   contactmobile: String,
   contactemail: String,
+  logo: String,
   grade: Number,
   active : {type: Boolean, default: true}
 });

@@ -95,8 +95,6 @@ export class CatalogResolver {
         @Arg("state") state: string
     ): Promise<ActiveCatalogOutput[]> {
         let filters : any = {};
-        console.log(filter);
-        console.log(filter.vendorId?.filter(el => el!='').map(el=> Types.ObjectId(el)));
 
         if((filter.vendorId?.filter(el => el!='').length || 0) > 0)
             filters["vendor._id"] = { $in : filter.vendorId?.filter(el => el!='').map(el=> Types.ObjectId(el)) || [] };
@@ -194,6 +192,11 @@ export class CatalogResolver {
                         catalogCategoryId: "$catalogCategoryId",
                         title: "$title",
                         outletName: "$outlet.name",
+                        outlet: {
+                          "name": "$outlet.name",
+                          "state": "$outlet.state",
+                          "place": "$outlet.place"
+                        },
                         vendor: {
                           id: "$vendor._id",
                           logo: "$vendor.logo",
@@ -287,6 +290,7 @@ export class CatalogResolver {
                     outlet: {
                       "name": "$name",
                       "state": "$state",
+                      "place": "$place",
                       "location": "$location",
                       "distance": "$distance",
                     }

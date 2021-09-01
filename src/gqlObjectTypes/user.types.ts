@@ -60,6 +60,18 @@ export class LoginResponse {
 
     @Field({nullable: true})
     name?: string
+
+    @Field({nullable: true})
+    city?: string
+}
+
+@ObjectType()
+export class AddUserResponse {
+    @Field(() => [FieldError], {nullable: true} )
+    errors?: FieldError[]
+
+    @Field({nullable: true})
+    userId?: string
 }
 
 @InputType()

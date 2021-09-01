@@ -29,6 +29,13 @@ export class CouponResolver {
            "state" : filter.state
        } : {};
 
+       const filterSearch = filter.search != "" ? {
+           $or : [
+            {"vendor.shopname": { "$regex": filter.search, "$options": "i" }},
+            {"coupon.name": { "$regex": filter.search, "$options": "i" }}
+           ]
+        } : {};
+
        const filterDistance : any = filter.coordinates ? {
             $geoNear: {
                 near: { type: "Point", coordinates: filter.coordinates },
@@ -108,6 +115,11 @@ export class CouponResolver {
                     "coupon.redeemLimit": "$coupon.redeemLimit",
                     "coupon.description": "$coupon.description",
                     "coupon.endDate": "$coupon.endDate",
+                }
+            },
+            {
+                $match : {
+                    ...filterSearch
                 }
             }
         ];

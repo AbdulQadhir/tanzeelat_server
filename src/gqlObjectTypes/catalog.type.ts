@@ -63,6 +63,10 @@ export class CatalogOutput {
 
   @Field(() => [String],{nullable: true})
   pages: string[];
+
+  @Field(() => [Number],{nullable: true})
+  distance?: Number[];
+
 }
 
 @ObjectType({ description: "The Catalog Output" })
@@ -98,6 +102,9 @@ export class ActiveCatalogOutputItem {
 
   @Field(() => [VendorOutlet])
   outlets: VendorOutlet[];
+
+  @Field(() => VendorOutlet)
+  outlet: VendorOutlet;
 
   @Field()
   expiry: Date;

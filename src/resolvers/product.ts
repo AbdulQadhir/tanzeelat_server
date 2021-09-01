@@ -42,8 +42,8 @@ export class ProductResolver {
             {
                 $match:{ 
                     $or : [
-                        {'name' :            { '$regex' : filter.name || '', '$options' : 'i' }},
-                        {'vendor.shopname' : { '$regex' : filter.name || '', '$options' : 'i' }}
+                        {'name' :            { '$regex' : filter.search || '', '$options' : 'i' }},
+                        {'vendor.shopname' : { '$regex' : filter.search || '', '$options' : 'i' }}
                     ]
                 },
             }
