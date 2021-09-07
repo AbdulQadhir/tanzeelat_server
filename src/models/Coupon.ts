@@ -20,6 +20,10 @@ export class Coupon {
 
   @prop()
   @Field()
+  namear: string;
+
+  @prop()
+  @Field()
   description: string;
 
   @prop()
@@ -69,6 +73,7 @@ export class Coupon {
 
 const couponSchema = new Schema({
   name: String,
+  namear: String,
   description: String,
   startDate: Date,
   endDate: Date,

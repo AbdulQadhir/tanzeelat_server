@@ -11,6 +11,9 @@ export class CouponInput {
     name: string;
 
     @Field()
+    namear: string;
+
+    @Field()
     description: string;
 
     @Field()
@@ -65,6 +68,9 @@ export class CouponUnveil {
 
     @Field({nullable: true})
     name?: string
+
+    @Field({nullable: true})
+    namear?: string
 
     @Field({nullable: true})
     coupon?: string
