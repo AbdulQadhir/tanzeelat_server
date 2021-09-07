@@ -25,6 +25,10 @@ export class VendorOutlet {
 
   @prop()
   @Field()
+  namear: string;
+
+  @prop()
+  @Field()
   state: string;
 
   @prop()
@@ -57,6 +61,7 @@ const WorkingHoursSchema = new Schema({
 const vendorSchema = new Schema({
   vendorId: { type: Mongoose.Types.ObjectId, ref: "Vendor" },
   name: String,
+  namear: String,
   place: String,
   state: String,
   workingHours: [WorkingHoursSchema],

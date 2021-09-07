@@ -14,6 +14,10 @@ export class VendorOutletInput {
     name: string;
 
     @Field()
+    @Length(3, 100)
+    namear: string;
+
+    @Field()
     state: string;
 
     @Field()
