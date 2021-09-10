@@ -18,12 +18,17 @@ export class CouponCategories {
   name: string;
 
   @prop()
+  @Field()
+  namear: string;
+
+  @prop()
   @Field({nullable: true})
   image: string;
 }
 
 const couponCategorySchema = new Schema({
   name: String,
+  namear: String,
   logo: String,
   image: String
 });
