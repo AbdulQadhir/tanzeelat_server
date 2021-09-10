@@ -16,11 +16,16 @@ export class CatalogCategories {
   @prop()
   @Field()
   name: string;
+
+  @prop()
+  @Field()
+  namear: string;
   
 }
 
 const catalogCategorySchema = new Schema({
   name: String,
+  namear: String,
 });
 
 const CatalogCategoriesModel : Model<any> = Mongoose.model('CatalogCategories', catalogCategorySchema);

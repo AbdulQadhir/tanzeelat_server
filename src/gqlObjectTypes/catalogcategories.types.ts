@@ -7,4 +7,8 @@ export class CatalogCategoryInput {
     @Field()
     @Length(3, 100)
     name: string;
+
+    @Field()
+    @Length(2, 100)
+    namear: string;
 }
