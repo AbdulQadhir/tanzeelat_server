@@ -32,9 +32,7 @@ export class CouponResolver {
        const filterSearch = filter.search != "" ? {
            $or : [
             {"vendor.shopname": { "$regex": filter.search, "$options": "i" }},
-            {"vendor.namear": { "$regex": filter.search, "$options": "i" }},
             {"coupon.name": { "$regex": filter.search, "$options": "i" }},
-            {"coupon.namear": { "$regex": filter.search, "$options": "i" }}
            ]
         } : {};
 
@@ -76,10 +74,7 @@ export class CouponResolver {
                     _id: "$coupon._id",
                     outletname: {
                     "$first": "$name",
-                    },
-                    outletnamear: {
-                    "$first": "$namear",
-                    },
+                    },        
                     place: {
                     "$first": "$place"
                     },
@@ -115,10 +110,8 @@ export class CouponResolver {
                     distance:1,
                     "vendor._id": "$vendor._id",
                     "vendor.shopname": "$vendor.shopname",
-                    "vendor.namear": "$vendor.namear",
                     "vendor.logo": "$vendor.logo",
                     "coupon.name": "$coupon.name",
-                    "coupon.namear": "$coupon.namear",
                     "coupon.redeemLimit": "$coupon.redeemLimit",
                     "coupon.description": "$coupon.description",
                     "coupon.endDate": "$coupon.endDate",
