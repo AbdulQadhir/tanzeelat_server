@@ -17,6 +17,9 @@ export class CouponInput {
     description: string;
 
     @Field()
+    descriptionar: string;
+
+    @Field()
     startDate: string;
 
     @Field()
@@ -77,6 +80,9 @@ export class CouponUnveil {
 
     @Field({nullable: true})
     description?: string
+
+    @Field({nullable: true})
+    descriptionar?: string
 
     @Field({nullable: true})
     redeemed?: boolean

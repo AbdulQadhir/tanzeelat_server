@@ -337,6 +337,7 @@ export class CouponResolver {
                 name: input.name,
                 namear: input.namear,
                 description: input.description,
+                descriptionar: input.descriptionar,
                 startDate: input.startDate,
                 endDate: input.endDate,
                 couponCategoryId: input.couponCategoryId,
