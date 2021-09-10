@@ -11,6 +11,9 @@ export class CatalogInput {
     title: string;
 
     @Field()
+    titlear: string; 
+
+    @Field()
     vendorId: string;
 
     @Field()
@@ -36,6 +39,9 @@ export class CatalogOutput {
 
   @Field()
   title: string;
+
+  @Field()
+  titlear: string;
 
   @Field()
   startDate: Date;
@@ -90,6 +96,9 @@ export class ActiveCatalogOutputItem {
 
   @Field()
   title: string;
+
+  @Field()
+  titlear: string;
 
   @Field()
   outletName: string

@@ -22,6 +22,10 @@ export class Catalog {
 
   @prop()
   @Field()
+  titlear: string;
+
+  @prop()
+  @Field()
   startDate: Date;
 
   @prop()
@@ -63,6 +67,7 @@ export class Catalog {
 
 const catalogSchema = new Schema({
   title: String,
+  titlear: String,
   startDate: Date,
   expiry: Date,
   status: { type: String, default: CatalogStatus.PENDING },
