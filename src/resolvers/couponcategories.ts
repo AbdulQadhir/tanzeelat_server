@@ -25,6 +25,7 @@ export class CouponCatagoriesResolver {
         @Arg("input") input: CouponCategoryInput
     ): Promise<CouponCategories> {
         let image = "";
+        console.log(input);
         if(input.image)
         {
             const s3 = new AWS.S3({

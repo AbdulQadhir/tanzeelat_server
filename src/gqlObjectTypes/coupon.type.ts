@@ -25,8 +25,8 @@ export class CouponInput {
     @Field()
     couponCategoryId: string;
 
-    @Field()
-    couponSubCategoryId: string;
+    @Field({nullable: true})
+    couponSubCategoryId?: string;
 
     @Field(() => [String])
     outlets: string[];

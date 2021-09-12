@@ -94,6 +94,24 @@ export class UserResolver {
         return true;
     }
 
+    @Mutation(() => Boolean)
+    async resetPassword(
+        @Arg("mobile") mobile : string,
+        @Arg("otp") otp : string,
+        @Arg("password") password : string
+    ): Promise<Boolean> {
+        const _mobile = mobile.length == 10 ? mobile.substr(1) : mobile;
+        const _otp = await OtpModel.findOne({mobile:_mobile})
+        
+        if(_otp?.otp == otp){
+            const hashedPass = await bcrypt.hash(password, saltRounds);
+            await UserModel.findOneAndUpdate({mobile},{password: hashedPass});
+            return true;
+        }
+        else
+            return false;
+    }
+
     @Mutation(() => AddUserResponse)
     async registerUser(
         @Arg("input") input: AddUserInput
@@ -115,7 +133,7 @@ export class UserResolver {
 
         const hashedPass = await bcrypt.hash(input.password, saltRounds);
         if(input.mobile.length == 10)
-            user.password = input.password.substr(1);
+            user.mobile = input.mobile.substr(1);
         user.password = hashedPass;
         user.verified = false;
         const result = await user.save();
