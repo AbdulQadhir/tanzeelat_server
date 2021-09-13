@@ -52,7 +52,9 @@ export class CatalogResolver {
     async otherCatalogsOfVendor(
         @Arg("catalogId") catalogId : string,
     ): Promise<Catalog[]> {
+        console.log(catalogId);
         const _tmp = await CatalogModel.findById(catalogId);
+        console.log(_tmp);
         const vendorId = _tmp.vendorId;
         
         const catalogs = await CatalogModel.aggregate([
@@ -188,6 +190,7 @@ export class CatalogResolver {
                     state: { $first: "$outlet.state" },
                     catalogs: {
                       $first: {
+                        _id: "$catalogId",
                         id: "$catalogId",
                         catalogCategoryId: "$catalogCategoryId",
                         title: "$title",
@@ -277,6 +280,14 @@ export class CatalogResolver {
                 }
             },
             {
+                $lookup:{
+                    from: 'vendoroutlets',
+                    localField: 'outlets',
+                    foreignField: '_id',
+                    as: 'outlets'
+                }
+            },
+            {
                 $project: {
                     title: "$catalogs.title",
                     expiry: "$catalogs.expiry",
@@ -293,7 +304,8 @@ export class CatalogResolver {
                       "place": "$place",
                       "location": "$location",
                       "distance": "$distance",
-                    }
+                    },
+                    outlets: "$outlets",
                 }
             },
             {

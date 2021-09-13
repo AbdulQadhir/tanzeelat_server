@@ -23,7 +23,7 @@ export class UserResolver {
         @Arg("input") input : LoginInput 
     ): Promise<LoginResponse>{
         
-        const user = await UserModel.findOne({$or: [{mobile: input.email}, {mobile: "0"+input.email}, {email: input.email}]});
+        const user = await UserModel.findOne({$or: [{mobile: input.email}, {mobile: "971"+input.email}, {email: input.email}]});
         if(!user)
             return {
                 errors : [{message: "Invalid Login"}]
@@ -69,9 +69,8 @@ export class UserResolver {
         @Arg("mobile") mobile : string,
         @Arg("otp") otp : string,
     ): Promise<Boolean> {
-        const _mobile = mobile.length == 10 ? mobile.substr(1) : mobile;
 
-        const _otp = await OtpModel.findOne({mobile:_mobile})
+        const _otp = await OtpModel.findOne({mobile})
         
         if(_otp){
             await UserModel.findOneAndUpdate({mobile},{verified: true});
@@ -85,12 +84,11 @@ export class UserResolver {
     async resendOtp(
         @Arg("mobile") mobile : string
     ): Promise<Boolean> {
-        const _mobile = mobile.length == 10 ? mobile.substr(1) : mobile;
 
         const otp = randomInteger();
-        sendOTP("971" + _mobile, otp);
+        sendOTP(mobile, otp);
 
-        await OtpModel.updateOne({ mobile: _mobile },{ mobile: _mobile, otp}, {upsert: true});
+        await OtpModel.updateOne({ mobile },{ mobile, otp}, {upsert: true});
         return true;
     }
 
@@ -139,7 +137,7 @@ export class UserResolver {
         const result = await user.save();
 
         const otp = randomInteger();
-        sendOTP("971" + result.mobile, otp);
+        sendOTP(result.mobile, otp);
 
         await OtpModel.updateOne({ mobile: input.mobile },{ mobile: input.mobile, otp}, {upsert: true});
         
