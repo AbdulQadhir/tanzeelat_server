@@ -48,6 +48,7 @@ export class CouponCatagoriesResolver {
         }
         const user = new CouponCategoriesModel({
             name: input.name,
+            namear: input.namear,
             image
         });
         const result = await user.save();

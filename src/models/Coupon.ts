@@ -20,7 +20,15 @@ export class Coupon {
 
   @prop()
   @Field()
+  namear: string;
+
+  @prop()
+  @Field()
   description: string;
+
+  @prop()
+  @Field()
+  descriptionar: string;
 
   @prop()
   @Field()
@@ -69,7 +77,9 @@ export class Coupon {
 
 const couponSchema = new Schema({
   name: String,
+  namear: String,
   description: String,
+  descriptionar: String,
   startDate: Date,
   endDate: Date,
   vendorId: { type: Mongoose.Types.ObjectId, ref: "Vendor" },

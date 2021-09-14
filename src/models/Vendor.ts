@@ -20,6 +20,10 @@ export class Vendor {
 
   @prop()
   @Field()
+  namear: string;
+
+  @prop()
+  @Field()
   password: string;
 
   @prop()
@@ -93,6 +97,7 @@ export class Vendor {
 
 const vendorSchema = new Schema({
   username: String,
+  namear:String,
   password: String,
   brandname: String,
   shopname: String,

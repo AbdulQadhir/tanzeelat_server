@@ -134,6 +134,7 @@ export class VendorResolver {
             $set:{
                 shopname : input.shopname,
                 username :  input.username,
+                namear: input.namear,
                 brandname :  input.brandname,
                 tradelicense :  input.tradelicense,
                 emiratesid :  input.emiratesid,

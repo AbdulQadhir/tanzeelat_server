@@ -32,7 +32,7 @@ export class CouponResolver {
        const filterSearch = filter.search != "" ? {
            $or : [
             {"vendor.shopname": { "$regex": filter.search, "$options": "i" }},
-            {"coupon.name": { "$regex": filter.search, "$options": "i" }}
+            {"coupon.name": { "$regex": filter.search, "$options": "i" }},
            ]
         } : {};
 
@@ -74,7 +74,7 @@ export class CouponResolver {
                     _id: "$coupon._id",
                     outletname: {
                     "$first": "$name",
-                    },
+                    },        
                     place: {
                     "$first": "$place"
                     },
@@ -335,7 +335,9 @@ export class CouponResolver {
         // const result = await CouponModel.findByIdAndUpdate(id,{
             $set:{
                 name: input.name,
+                namear: input.namear,
                 description: input.description,
+                descriptionar: input.descriptionar,
                 startDate: input.startDate,
                 endDate: input.endDate,
                 couponCategoryId: input.couponCategoryId,

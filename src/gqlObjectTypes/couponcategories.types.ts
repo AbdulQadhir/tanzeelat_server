@@ -10,6 +10,9 @@ export class CouponCategoryInput {
     @Field()
     name: string;
 
+    @Field()
+    namear: string;
+
     @Field(() => GraphQLUpload,{nullable: true})
     image: Upload;
 
@@ -32,6 +35,9 @@ export class CouponSubCategoryInput {
 
     @Field()
     name: string;
+
+    @Field()
+    namear: string;
 
     @Field(() => GraphQLUpload,{nullable: true})
     image: Upload;

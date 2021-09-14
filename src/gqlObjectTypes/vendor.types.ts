@@ -10,6 +10,9 @@ export class AddVendorInput {
   
     @Field()
     username: string;
+
+    @Field()
+    namear: string;
   
     @Field()
     password: string;
@@ -106,6 +109,7 @@ export class VendorLoginResponse {
     @Field({nullable: true})
     name?: string
 
+
     @Field({nullable: true})
     token?: string
 }
@@ -114,6 +118,9 @@ export class VendorLoginResponse {
 export class VendorLoginInput {
     @Field()
     username: string
+
+    @Field()
+    namear: string
 
     @Field()
     password:  string

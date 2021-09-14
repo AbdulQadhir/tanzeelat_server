@@ -89,6 +89,7 @@ export class VendorOutletResolver {
         const result = await VendorOutletModel.findByIdAndUpdate(id,{
             $set:{
                 name: input.name,
+                namear:input.namear,
                 state: input.state,
                 place:input.place,
                 location:location,
