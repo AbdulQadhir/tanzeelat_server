@@ -47,12 +47,12 @@ export class Coupon {
   redeemLimit?: Number;
 
   @prop()
-  @Field()
-  couponCategoryId: string;
+  @Field({nullable: true})
+  couponCategoryId?: string;
 
   @prop()
-  @Field()
-  couponSubCategoryId: string;
+  @Field({nullable: true})
+  couponSubCategoryId?: string;
 
   @prop()
   @Field(() => [String])

@@ -19,7 +19,6 @@ export class CouponSubCatagoriesResolver {
         @Arg("id") id: string
     ): Promise<CouponSubCategories[]> {
         const cats = await CouponSubCategoriesModel.find({couponCategoryId:id});
-        console.log(cats);
         return cats;
     }
 
@@ -52,6 +51,7 @@ export class CouponSubCatagoriesResolver {
 
         const item = new CouponSubCategoriesModel({
             name: input.name,
+            namear: input.namear,
             couponCategoryId:input.couponCategoryId,
             image
         });

@@ -4,6 +4,14 @@ import { Resolver, Query, Arg, Mutation } from "type-graphql"
 import ProductCategoriesModel, { ProductCategories } from "../models/ProductCategories";
 import ProductSubCategoriesModel from "../models/ProductSubCategory";
 
+const path = require("path");
+ 
+const ID = 'AKIAID3BSRIGM4OQ5J6A';
+const SECRET = '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';
+
+const BUCKET_NAME = 'tanzeelat';
+const AWS = require('aws-sdk');
+import { v4 as uuidv4 } from 'uuid';
  
 @Resolver()
 export class ProductCatagoriesResolver {
@@ -31,7 +39,9 @@ export class ProductCatagoriesResolver {
                 $match : {
                     $or : [
                         {"name": { "$regex": search, "$options": "i" }},
-                        {"subcategories.name": { "$regex": search, "$options": "i" }}
+                        {"namear": { "$regex": search, "$options": "i" }},
+                        {"subcategories.name": { "$regex": search, "$options": "i" }},
+                        {"subcategories.namear": { "$regex": search, "$options": "i" }}
                     ]
                 }
             }
@@ -49,7 +59,7 @@ export class ProductCatagoriesResolver {
                       $first: "$productCategoryId"
                     },
                     subCategories: {
-                      "$push": { name: "$name", id: "$_id" }
+                      "$push": { name: "$name",namear: "$namear", id: "$_id" }
                     }
                 }
             }
@@ -62,7 +72,33 @@ export class ProductCatagoriesResolver {
     async addProductCategory(
         @Arg("input") input: ProductCategoryInput
     ): Promise<ProductCategories> {
-        const user = new ProductCategoriesModel({...input});
+        let image = "";
+        console.log(input);
+        if(input.image)
+        {
+            const s3 = new AWS.S3({
+                accessKeyId: ID,
+                secretAccessKey: SECRET
+            });
+
+            const { createReadStream, filename, mimetype } = await input.image;
+
+            const { Location } = await s3.upload({ // (C)
+                Bucket: BUCKET_NAME,
+                Body: createReadStream(),               
+                Key: `${uuidv4()}${path.extname(filename)}`,  
+                ContentType: mimetype                   
+            }).promise();       
+
+            
+            console.log(Location);
+            image = Location;
+        }
+        const user = new ProductCategoriesModel({
+            name: input.name,
+            namear: input.namear,
+            image
+        });
         const result = await user.save();
         return result;
     }

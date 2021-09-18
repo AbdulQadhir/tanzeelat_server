@@ -18,8 +18,8 @@ export class CatalogCategories {
   name: string;
 
   @prop()
-  @Field()
-  namear: string;
+  @Field({nullable:true})
+  namear?: string;
   
 }
 

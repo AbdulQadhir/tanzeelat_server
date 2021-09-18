@@ -15,16 +15,8 @@ export class Vendor {
   _id: string;
 
   @prop()
-  @Field()
-  username: string;
-
-  @prop()
-  @Field()
-  namear: string;
-
-  @prop()
-  @Field()
-  password: string;
+  @Field({nullable: true})
+  namear?: string;
 
   @prop()
   @Field()
@@ -41,10 +33,6 @@ export class Vendor {
   @prop()
   @Field()
   tradelicense: string;
-
-  @prop()
-  @Field()
-  emiratesid: string;
 
   @prop()
   @Field({nullable: true})
@@ -88,7 +76,7 @@ export class Vendor {
 
   @prop()
   @Field({nullable: true})
-  subTitle: string;
+  subtitle: string;
 
   @prop()
   @Field()
@@ -96,14 +84,11 @@ export class Vendor {
 }
 
 const vendorSchema = new Schema({
-  username: String,
   namear:String,
-  password: String,
   brandname: String,
   shopname: String,
   category: String,
   tradelicense: String,
-  emiratesid: String,
   ownername: String,
   ownerphone: String,
   owneremail: String,
@@ -113,6 +98,8 @@ const vendorSchema = new Schema({
   contactemail: String,
   logo: String,
   grade: Number,
+  about: String,
+  subtitle: String,
   active : {type: Boolean, default: true}
 });
 

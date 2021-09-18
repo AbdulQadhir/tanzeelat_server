@@ -106,6 +106,7 @@ export class CatalogResolver {
             filters["$or"] = [
                                 {title: { "$regex": filter.search, "$options": "i" }},
                                 {"outlet.name": { "$regex": filter.search, "$options": "i" }},
+                                {"outlet.namear": { "$regex": filter.search, "$options": "i" }},
                                 {"outlet.state": { "$regex": filter.search, "$options": "i" }}
                             ]
         if(filter?.state)
@@ -118,6 +119,7 @@ export class CatalogResolver {
                 $project: {
                     vendorId: 1,
                     title: 1,
+                    titlear: 1,
                     outlets: 1,
                     pages: 1,
                     outletCopy : "$outlets",
@@ -194,9 +196,11 @@ export class CatalogResolver {
                         id: "$catalogId",
                         catalogCategoryId: "$catalogCategoryId",
                         title: "$title",
+                        titlear: "$titlear",
                         outletName: "$outlet.name",
                         outlet: {
                           "name": "$outlet.name",
+                          "namear": "$outlet.namear",
                           "state": "$outlet.state",
                           "place": "$outlet.place"
                         },
@@ -290,6 +294,7 @@ export class CatalogResolver {
             {
                 $project: {
                     title: "$catalogs.title",
+                    titlear: "$catalogs.titlear",
                     expiry: "$catalogs.expiry",
                     status: "$catalogs.status",
                     startDate: "$catalogs.startDate",

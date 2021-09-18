@@ -24,8 +24,8 @@ export class VendorOutlet {
   name: string;
 
   @prop()
-  @Field()
-  namear: string;
+  @Field({nullable: true})
+  namear?: string;
 
   @prop()
   @Field()

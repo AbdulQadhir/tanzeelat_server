@@ -13,9 +13,8 @@ export class VendorOutletInput {
     @Length(3, 100)
     name: string;
 
-    @Field()
-    @Length(3, 100)
-    namear: string;
+    @Field({nullable: true})
+    namear?: string;
 
     @Field()
     state: string;

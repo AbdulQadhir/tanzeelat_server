@@ -10,8 +10,8 @@ export class CatalogInput {
     @Field()
     title: string;
 
-    @Field()
-    titlear: string; 
+    @Field({nullable: true})
+    titlear?: string; 
 
     @Field()
     vendorId: string;

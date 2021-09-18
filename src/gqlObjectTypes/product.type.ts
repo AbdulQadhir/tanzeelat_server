@@ -11,6 +11,9 @@ export class ProductInput {
     name: string;
 
     @Field({ nullable: true })
+    namear: string;
+
+    @Field({ nullable: true })
     price?: number;
 
     @Field({ nullable: true })

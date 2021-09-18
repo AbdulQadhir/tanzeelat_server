@@ -10,14 +10,14 @@ export class CouponInput {
     @Field()
     name: string;
 
-    @Field()
-    namear: string;
+    @Field({nullable: true})
+    namear?: string;
 
     @Field()
     description: string;
 
-    @Field()
-    descriptionar: string;
+    @Field({nullable: true})
+    descriptionar?: string;
 
     @Field()
     startDate: string;

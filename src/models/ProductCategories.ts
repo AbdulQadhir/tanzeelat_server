@@ -20,6 +20,10 @@ export class ProductCategories {
 
   @prop()
   @Field({nullable: true})
+  namear?: string;
+
+  @prop()
+  @Field({nullable: true})
   image: string;
 
   @prop()
@@ -29,6 +33,7 @@ export class ProductCategories {
 
 const productCategorySchema = new Schema({
   name: String,
+  namear: String,
   image: String
 });
 

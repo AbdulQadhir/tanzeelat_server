@@ -19,6 +19,10 @@ export class CouponSubCategories {
 
   @prop()
   @Field({nullable: true})
+  namear: string;
+
+  @prop()
+  @Field({nullable: true})
   image: string;
 
   @prop()
@@ -28,6 +32,7 @@ export class CouponSubCategories {
 
 const couponSubCategorySchema = new Schema({
   name: String,
+  namear: String,
   image: String,
   couponCategoryId: { type: Mongoose.Types.ObjectId, ref: "CouponCategories" },
 });

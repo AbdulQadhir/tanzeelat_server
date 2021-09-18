@@ -7,15 +7,9 @@ import { Upload } from "./catalog.type";
 
 @InputType({ description: "New Vendor data" })
 export class AddVendorInput {
-  
-    @Field()
-    username: string;
 
     @Field()
     namear: string;
-  
-    @Field()
-    password: string;
   
     @Field()
     brandname: string;
@@ -25,9 +19,6 @@ export class AddVendorInput {
   
     @Field()
     tradelicense: string;
-  
-    @Field()
-    emiratesid: string;
   
     @Field()
     category: string;
@@ -66,6 +57,9 @@ export class AddVendorInput {
   
     @Field({ nullable: true })
     about?: string;
+  
+    @Field({ nullable: true })
+    subtitle?: string;
   }
 
 @InputType()

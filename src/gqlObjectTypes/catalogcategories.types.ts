@@ -8,7 +8,6 @@ export class CatalogCategoryInput {
     @Length(3, 100)
     name: string;
 
-    @Field()
-    @Length(2, 100)
-    namear: string;
+    @Field({nullable: true})
+    namear?: string;
 }

@@ -18,8 +18,8 @@ export class CouponCategories {
   name: string;
 
   @prop()
-  @Field()
-  namear: string;
+  @Field({nullable: true})
+  namear?: string;
 
   @prop()
   @Field({nullable: true})

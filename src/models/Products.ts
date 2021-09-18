@@ -14,8 +14,12 @@ export class Product {
   _id: string;
 
   @prop()
-  @Field()
+  @Field({nullable: true})
   name: string;
+
+  @prop()
+  @Field()
+  namear?: string;
 
   @prop()
   @Field({nullable: true})
@@ -48,6 +52,7 @@ export class Product {
 
 const productSchema = new Schema({
   name: String,
+  namear: String,
   price: Number,
   offerPrice: Number,
   expiry: Date,

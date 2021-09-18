@@ -128,6 +128,7 @@ export class ProductResolver {
 
         const product = new ProductModel({
             name: input.name,
+            namear: input.namear,
             price: input.price,
             offerPrice: input.offerPrice,
             vendorId: input.vendorId,

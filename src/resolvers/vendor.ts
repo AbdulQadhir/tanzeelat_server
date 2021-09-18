@@ -53,8 +53,11 @@ export class VendorResolver {
         @Arg("id") id : String,
         @Ctx() ctx: Context
     ): Promise<Vendor | null> {
+        console.log(id);
         const accessList = await accessibleVendorList(ctx.userId);
         
+        console.log(ctx);
+        console.log(accessList);
         if(accessList.length==0) return null;
         
         if(accessList[0] != 'all' && accessList.findIndex((el: { toString: () => string; }) => el.toString() == id.toString()) == -1) return null;
@@ -133,11 +136,9 @@ export class VendorResolver {
         replace = {
             $set:{
                 shopname : input.shopname,
-                username :  input.username,
                 namear: input.namear,
                 brandname :  input.brandname,
                 tradelicense :  input.tradelicense,
-                emiratesid :  input.emiratesid,
                 ownername :  input.ownername,
                 ownerphone :  input.ownerphone,
                 owneremail :  input.owneremail,
@@ -146,16 +147,11 @@ export class VendorResolver {
                 contactmobile :  input.contactmobile,
                 contactemail :  input.contactemail,
                 grade : input.grade,
+                subtitle : input.subtitle,
                 about : input.about
             }
         }
         
-        if(input.password)
-        {
-        //    const hashedPass = await bcrypt.hash(input.password, saltRounds);
-            replace.$set["password"] = input.password;//hashedPass;
-        }
-
         if(input.logo)
         {
             const user = await VendorModel.findById(id);
@@ -220,8 +216,6 @@ export class VendorResolver {
         }
         const user = new VendorModel({...input,logo:img});
 
-       // const hashedPass = await bcrypt.hash(input.password, saltRounds);
-      //  user.password = hashedPass;
         const result = await user.save();
 
         return result;

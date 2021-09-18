@@ -10,7 +10,6 @@ export class CatalogCatagoriesResolver {
     @Query(() => [CatalogCategories])
     async catalogCategories(): Promise<CatalogCategories[]> {
         const cats = await CatalogCategoriesModel.find();
-        console.log(cats);
         return cats;
     }
 

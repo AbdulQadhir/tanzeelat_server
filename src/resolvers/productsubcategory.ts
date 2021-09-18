@@ -3,6 +3,15 @@ import { ProductSubCategoryInput} from "../gqlObjectTypes/productcategories.type
 import { Resolver, Query, Arg, Mutation } from "type-graphql"
 import ProductSubCategoriesModel, { ProductSubCategories } from "../models/ProductSubCategory";
  
+const path = require("path");
+ 
+const ID = 'AKIAID3BSRIGM4OQ5J6A';
+const SECRET = '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';
+
+const BUCKET_NAME = 'tanzeelat';
+const AWS = require('aws-sdk');
+import { v4 as uuidv4 } from 'uuid';
+
 @Resolver()
 export class ProductSubCatagoriesResolver {
     @Query(() => [ProductSubCategories])
@@ -17,7 +26,35 @@ export class ProductSubCatagoriesResolver {
     async addProductSubCategory(
         @Arg("input") input: ProductSubCategoryInput
     ): Promise<ProductSubCategories> {
-        const user = new ProductSubCategoriesModel({...input});
+        
+        let image = "";
+        console.log(input);
+        if(input.image)
+        {
+            const s3 = new AWS.S3({
+                accessKeyId: ID,
+                secretAccessKey: SECRET
+            });
+
+            const { createReadStream, filename, mimetype } = await input.image;
+
+            const { Location } = await s3.upload({ // (C)
+                Bucket: BUCKET_NAME,
+                Body: createReadStream(),               
+                Key: `${uuidv4()}${path.extname(filename)}`,  
+                ContentType: mimetype                   
+            }).promise();       
+
+            
+            console.log(Location);
+            image = Location;
+        }
+        const user = new ProductSubCategoriesModel({
+            name: input.name,
+            namear: input.namear,
+            productCategoryId: input.productCategoryId,
+            image
+        });
         const result = await user.save();
         return result;
     }
