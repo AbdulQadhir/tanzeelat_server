@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import { Resolver, Query, Arg, Mutation, Ctx } from "type-graphql"
 import CatalogModel, { Catalog } from "../models/Catalog";
-import { CatalogInput, UpdPagesInput, UploadRespType, CatalogFilters, CatalogOutput, ActiveCatalogOutput } from "../gqlObjectTypes/catalog.type";
+import { CatalogInput, UpdPagesInput, UploadRespType, CatalogFilters, CatalogOutput, ActiveCatalogOutput, BookmarkInput } from "../gqlObjectTypes/catalog.type";
 import { v4 as uuidv4 } from 'uuid';
 import { Types } from "mongoose";
 import { Context } from "vm";
@@ -233,6 +233,108 @@ export class CatalogResolver {
 
         return catalogs;
     }
+
+    
+    @Query(() => [CatalogOutput])
+    async bookmarkedCatalogs(
+        @Arg("bookmarks") bookmarks: BookmarkInput,
+    ): Promise<CatalogOutput[]> {
+
+        const _bookmarks = bookmarks?.bookmarks?.map(el => Types.ObjectId(el.toString()));
+        
+        const today = new Date();
+            
+        const catalogs = await CatalogModel.aggregate([
+            {
+                $project: {
+                    vendorId: 1,
+                    title: 1,
+                    titlear: 1,
+                    outlets: 1,
+                    pages: 1,
+                    outletCopy : "$outlets",
+                    catalogCategoryId: 1,
+                    catalogId: "$_id",
+                    expiry: 1,
+                    startDate: 1,
+                    status: 1           
+                }
+            },
+            {
+                $lookup:{
+                    from: 'vendoroutlets',
+                    localField: 'outlets',
+                    foreignField: '_id',
+                    as: 'outlets'
+                }
+            },
+            {
+                $lookup:{
+                    from: 'vendors',
+                    localField: 'vendorId',
+                    foreignField: '_id',
+                    as: 'vendor'
+                }
+            },
+            {
+                $unwind: {
+                    path: "$vendor",
+                }
+            },
+            {
+                $unwind: {
+                    path: "$outletCopy",
+                }
+            },
+            {
+                $lookup: {
+                    from: 'vendoroutlets',
+                    localField: 'outletCopy',
+                    foreignField: '_id',
+                    as: 'outlet'
+                }
+            },
+            {
+                $unwind: {
+                    path: "$outlet",
+                }
+            },
+            {
+                $match:{
+                    status: "ACCEPTED",
+                    expiry: { $gte : today },
+                    startDate: { $lte : today },
+                    _id: { $in : _bookmarks }
+                }
+            },
+            {
+                $project: {
+                    _id: "$catalogId",
+                    id: "$catalogId",
+                    catalogCategoryId: "$catalogCategoryId",
+                    title: "$title",
+                    titlear: "$titlear",
+                    outletName: "$outlet.name",
+                    outlet: {
+                      "name": "$outlet.name",
+                      "namear": "$outlet.namear",
+                      "state": "$outlet.state",
+                      "place": "$outlet.place"
+                    },
+                    vendor: {
+                      id: "$vendor._id",
+                      logo: "$vendor.logo",
+                      shopname: "$vendor.shopname"
+                    },
+                    pages: "$pages",
+                    outlets: "$outlets",
+                    expiry: "$expiry"
+                }
+            },
+        ]);
+
+        return catalogs;
+    }
     
     @Query(() => [CatalogOutput])
     async nearCatalogs(
@@ -241,7 +343,7 @@ export class CatalogResolver {
         let _coords = [];
         _coords[0] = parseFloat(coords.split(",")[0] || "") || 0;
         _coords[1] = parseFloat(coords.split(",")[1] || "") || 0;
-      //  console.log(_coords);
+        // console.log(_coords);
 
         const today = new Date();
        // const yesterday = new Date().setDate(new Date().getDate()-1)
@@ -286,7 +388,7 @@ export class CatalogResolver {
             {
                 $lookup:{
                     from: 'vendoroutlets',
-                    localField: 'outlets',
+                    localField: 'catalogs.outlets',
                     foreignField: '_id',
                     as: 'outlets'
                 }

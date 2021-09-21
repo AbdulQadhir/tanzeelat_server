@@ -34,6 +34,9 @@ export class CatalogInput {
 @ObjectType({ description: "The Catalog Output" })
 export class CatalogOutput {
   
+  @Field({nullable:true})
+  id?: string;
+  
   @Field()
   _id: string;
 
@@ -118,6 +121,14 @@ export class ActiveCatalogOutputItem {
   @Field()
   expiry: Date;
 
+}
+
+@InputType({ description: "Catalog Filters" })
+export class BookmarkInput {
+
+    @Field(()=>[String])
+    bookmarks?: [string]
+    
 }
 
 @InputType({ description: "Catalog Filters" })
