@@ -179,6 +179,7 @@ export class CatalogResolver {
                     status: "ACCEPTED",
                     expiry: { $gte : today },
                     startDate: { $lte : today },
+                    'vendor.active': true,
                     ...filters
                 }
             },
@@ -343,7 +344,7 @@ export class CatalogResolver {
         let _coords = [];
         _coords[0] = parseFloat(coords.split(",")[0] || "") || 0;
         _coords[1] = parseFloat(coords.split(",")[1] || "") || 0;
-        // console.log(_coords);
+        //  console.log(_coords);
 
         const today = new Date();
        // const yesterday = new Date().setDate(new Date().getDate()-1)
@@ -395,6 +396,7 @@ export class CatalogResolver {
             },
             {
                 $project: {
+                    'id': "$_id",
                     title: "$catalogs.title",
                     titlear: "$catalogs.titlear",
                     expiry: "$catalogs.expiry",
@@ -405,6 +407,7 @@ export class CatalogResolver {
                     "vendor.shopname": 1,
                     "vendor.logo": 1,
                     "vendor.outlets": 1,
+                    "vendor.active": 1,
                     outlet: {
                       "name": "$name",
                       "state": "$state",
@@ -418,6 +421,7 @@ export class CatalogResolver {
             {
                 $match:{
                     status: "ACCEPTED",
+                    'vendor.active': true,
                     expiry: { $gte : today },
                     startDate: { $lte : today }
                 }
@@ -426,7 +430,7 @@ export class CatalogResolver {
                 $limit: 7
             }
         ]);
-
+        
         return catalogs;
     }
     
