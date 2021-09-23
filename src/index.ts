@@ -75,7 +75,7 @@ const startServer = async() => {
                     token = token.substr(7);
                     var publicKEY  = fs.readFileSync('src/keys/public.key', 'utf8');
                     try {
-                        var decoded = jwt.verify(token,  publicKEY);
+                        var decoded = jwt.verify(token,  publicKEY, {ignoreExpiration: true});
                         if(decoded?.userId)
                             return {userId: decoded.userId, roles: decoded.roles || [], userType: decoded.userType}
                         //console.log("decoded",decoded?.userId);

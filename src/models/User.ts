@@ -9,7 +9,7 @@ export class User {
   @Field(() => ID)
   id: string;
 
-  @Field()
+  @Field({nullable: true})
   _id: string;
 
   @prop()
@@ -17,7 +17,7 @@ export class User {
   name: string;
 
   @prop()
-  @Field()
+  @Field({nullable: true})
   email: string;
 
   @prop()
@@ -25,15 +25,15 @@ export class User {
   mobile: string;
 
   @prop()
-  @Field()
+  @Field({nullable: true})
   city: string;
 
   @prop()
-  @Field()
+  @Field({nullable: true})
   password: string;
 
   @prop()
-  @Field()
+  @Field({nullable: true})
   verified: boolean;
 }
 

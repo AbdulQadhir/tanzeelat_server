@@ -1,9 +1,10 @@
 import "reflect-metadata";
 import { LoginInput, LoginResponse, AddUserInput, AddUserResponse } from "../gqlObjectTypes/user.types";
-import { Resolver, Query, Arg, Mutation } from "type-graphql"
+import { Resolver, Query, Arg, Mutation, Ctx } from "type-graphql"
 import UserModel, {User} from "../models/User"
 import { sendOTP } from "../utils/otp";
 import OtpModel from "../models/OTP";
+import { Context } from "vm";
 
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
@@ -80,6 +81,18 @@ export class UserResolver {
             return false;
     }
 
+    @Query(() => User)
+    async getProfileDt(
+        @Ctx() ctx: Context
+        ): Promise<User> {
+
+        const userId = ctx.userId;
+        const user = await UserModel.findById(userId,"name mobile email city");
+        console.log(userId);
+        console.log(user);
+        return user;
+    }
+
     @Query(() => Boolean)
     async resendOtp(
         @Arg("mobile") mobile : string
@@ -89,6 +102,25 @@ export class UserResolver {
         sendOTP(mobile, otp);
 
         await OtpModel.updateOne({ mobile },{ mobile, otp}, {upsert: true});
+        return true;
+    }
+
+    @Mutation(() => Boolean)
+    async changePassword(
+        @Ctx() ctx: Context,
+        @Arg("oldPassword") oldPassword : string,
+        @Arg("password") password : string
+    ): Promise<Boolean> {
+        const userId = ctx.userId;
+
+        const passMatch = await UserModel.findById(userId);
+        const match = await bcrypt.compare(oldPassword, passMatch?.password);
+        if(!match)
+            return false;
+        
+        const hashedPass = await bcrypt.hash(password, saltRounds);
+        await UserModel.findByIdAndUpdate(userId,{password: hashedPass});
+
         return true;
     }
 
