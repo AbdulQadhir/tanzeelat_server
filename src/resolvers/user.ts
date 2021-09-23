@@ -125,6 +125,27 @@ export class UserResolver {
     }
 
     @Mutation(() => Boolean)
+    async updateProfile(
+        @Ctx() ctx: Context,
+        @Arg("field") field : string,
+        @Arg("value") value : string
+    ): Promise<Boolean> {
+        const userId = ctx.userId;
+
+        let update = {};
+        if(field == "name")
+            update = {name: value};
+        else if(field = "mobile")
+            update = {mobile: value};
+        else if(field = "email")
+            update = {email: value};
+
+        await UserModel.findByIdAndUpdate(userId,update);
+
+        return true;
+    }
+
+    @Mutation(() => Boolean)
     async resetPassword(
         @Arg("mobile") mobile : string,
         @Arg("otp") otp : string,
