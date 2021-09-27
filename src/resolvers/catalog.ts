@@ -396,7 +396,8 @@ export class CatalogResolver {
             },
             {
                 $project: {
-                    'id': "$_id",
+                    '_id': "$catalogs._id",
+                    'id': "$catalogs._id",
                     title: "$catalogs.title",
                     titlear: "$catalogs.titlear",
                     expiry: "$catalogs.expiry",
@@ -463,6 +464,19 @@ export class CatalogResolver {
             {
                 $unwind: {
                     path: "$catalogCategoryDt"
+                }
+            },
+            {
+                $lookup: {
+                    from: 'vendors',
+                    localField: 'vendorId',
+                    foreignField: '_id',
+                    as: 'vendor'
+                }
+            },
+            {
+                $unwind: {
+                    path: "$vendor"
                 }
             }
         ]);
