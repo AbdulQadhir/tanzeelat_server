@@ -20,8 +20,8 @@ export class AddVendorInput {
     @Field()
     tradelicense: string;
   
-    @Field()
-    category: string;
+    @Field({nullable: true})
+    category?: string;
   
     @Field({nullable: true})
     location: LocationInput;
