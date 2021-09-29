@@ -420,6 +420,50 @@ export class CatalogResolver {
                 }
             },
             {
+                $group: {
+
+                    _id: "$id",
+                    title: {
+                        $first: "$title"
+                    },
+                    titlear: {
+                        $first: "$titlear"
+                    },
+                    expiry: {
+                        $first: "$expiry"
+                    },
+                    status: {
+                        $first: "$status"
+                    },
+                    startDate: {
+                        $first: "$startDate"
+                    },
+                    pages: {
+                        $first: "$pages"
+                    },
+                    vendor: {
+                        $first: {
+                            "_id": "$vendor._id",
+                            "shopname": "$vendor.shopname",
+                            "logo": "$vendor.logo",
+                            "active": "$vendor.active"
+                        }
+                    },
+                    outlet: {
+                        $first: {
+                            "name": "$outlet.name",
+                            "state": "$outlet.state",
+                            "place": "$outlet.place",
+                            "location": "$outlet.location",
+                            "distance": "$outlet.distance",
+                        }
+                    },
+                    outlets: {
+                        $first: "$outlets"
+                    }
+                }
+            },
+            {
                 $match:{
                     status: "ACCEPTED",
                     'vendor.active': true,
