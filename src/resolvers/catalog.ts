@@ -423,6 +423,7 @@ export class CatalogResolver {
                 $group: {
 
                     _id: "$id",
+                    id: { $first: "$id" },
                     title: {
                         $first: "$title"
                     },
