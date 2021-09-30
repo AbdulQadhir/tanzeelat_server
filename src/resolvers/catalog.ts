@@ -473,6 +473,11 @@ export class CatalogResolver {
                 }
             },
             {
+                $sort: {
+                    'outlet.distance': 1
+                }
+            },
+            {
                 $limit: 7
             }
         ]);
