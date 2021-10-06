@@ -47,14 +47,14 @@ export class CouponInput {
 @InputType({ description: "Coupon filter" })
 export class CouponFilterInput {
 
-    @Field()
-    id: string;
+    @Field({nullable: true})
+    id?: string;
 
-    @Field()
-    state: string;
+    @Field({nullable: true})
+    state?: string;
 
-    @Field()
-    search: string;
+    @Field({nullable: true})
+    search?: string;
 
     @Field(()=>[Number],{nullable: true})
     coordinates?: [Number];

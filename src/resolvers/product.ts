@@ -17,13 +17,18 @@ const AWS = require('aws-sdk');
 export class ProductResolver {
     @Query(() => [Product])
     async allProducts(
-        @Arg("productSubCategoryId") productSubCategoryId: string,
         @Arg("filter") filter: ProductFilters
     ): Promise<Product[]> {
+
+
+       const filterCategory = filter.productSubCategoryId != "0" ? {
+            "productSubCategoryId" : Types.ObjectId(filter.productSubCategoryId)
+        } : {};
+
         const products = await ProductModel.aggregate([
             {
                 $match:{ 
-                    'productSubCategoryId' : Types.ObjectId(productSubCategoryId)
+                    ...filterCategory
                 }
             },
             {

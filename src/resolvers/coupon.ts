@@ -25,8 +25,14 @@ export class CouponResolver {
 
        // const userId = ctx.userId || "";
 
+       console.log(filter);
+
        const filterState = filter.state != "" ? {
            "state" : filter.state
+       } : {};
+
+       const filterCategory = filter.id != "0" ? {
+           "coupon.couponCategoryId" : Types.ObjectId(filter.id)
        } : {};
 
        const filterSearch = filter.search != "" ? {
@@ -66,7 +72,7 @@ export class CouponResolver {
             },
             {
                 $match:{
-                    "coupon.couponCategoryId": Types.ObjectId(filter.id)
+                    ...filterCategory
                 }
             },
             {

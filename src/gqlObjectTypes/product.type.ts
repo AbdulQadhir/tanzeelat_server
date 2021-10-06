@@ -36,6 +36,9 @@ export class ProductInput {
 export class ProductFilters {
 
     @Field({nullable: true})
+    productSubCategoryId: string;
+
+    @Field({nullable: true})
     search?: string;
 }
 
