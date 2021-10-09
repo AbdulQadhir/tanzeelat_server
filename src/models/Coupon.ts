@@ -68,7 +68,7 @@ export class Coupon {
 
   @prop()
   @Field({nullable: true}) 
-  menu: string;
+  menu?: string;
 
   @prop()
   @Field({nullable: true})
