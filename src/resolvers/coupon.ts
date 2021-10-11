@@ -42,6 +42,18 @@ export class CouponResolver {
            ]
         } : {};
 
+        const sortBy = filter.sortBy ? filter.sortBy == "new" ? 
+                {
+                    "coupon.startDate": 1
+                } : 
+                filter.sortBy == "near" ?
+                {
+                    "distance": 1
+                } : filter.sortBy == "featured" ?
+                    {
+                            "coupon.featured": 1
+                    }: {} : {};
+
        const filterDistance : any = filter.coordinates ? {
             $geoNear: {
                 near: { type: "Point", coordinates: filter.coordinates },
@@ -121,11 +133,18 @@ export class CouponResolver {
                     "coupon.redeemLimit": "$coupon.redeemLimit",
                     "coupon.description": "$coupon.description",
                     "coupon.endDate": "$coupon.endDate",
+                    "coupon.startDate": "$coupon.startDate",
+                    "coupon.featured": "$coupon.featured",
                 }
             },
             {
                 $match : {
                     ...filterSearch
+                }
+            },
+            {
+                $sort : {
+                    ...sortBy
                 }
             }
         ];

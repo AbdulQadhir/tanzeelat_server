@@ -73,6 +73,10 @@ export class Coupon {
   @prop()
   @Field({nullable: true})
   userCouponId: string;
+
+  @prop()
+  @Field(()=>Number,{nullable: true})
+  featured: Number;
 }
 
 const couponSchema = new Schema({
@@ -87,7 +91,8 @@ const couponSchema = new Schema({
   couponSubCategoryId: { type: Mongoose.Types.ObjectId, ref: "CouponSubCategories" },
   outlets: [{ type: Mongoose.Types.ObjectId, ref: "VendorOutlet" }],
   menu: String,
-  redeemLimit: Number
+  redeemLimit: Number,
+  featured: Number
 });
 
 const CouponModel : Model<any> = Mongoose.model('Coupon', couponSchema);

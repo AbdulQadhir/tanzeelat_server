@@ -42,6 +42,9 @@ export class CouponInput {
 
     @Field(()=> Number,{nullable: true})
     redeemLimit: Number;
+
+    @Field(()=> Number,{nullable: true})
+    featured: Number;
 }
 
 @InputType({ description: "Coupon filter" })
@@ -58,6 +61,9 @@ export class CouponFilterInput {
 
     @Field(()=>[Number],{nullable: true})
     coordinates?: [Number];
+
+    @Field({nullable: true})
+    sortBy?: string;
 }
 
 @ObjectType()
