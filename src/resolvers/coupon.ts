@@ -52,7 +52,7 @@ export class CouponResolver {
                 } : filter.sortBy == "featured" ?
                     {
                             "coupon.featured": 1
-                    }: {} : {};
+                    }: {"coupon.startDate": 1} : {"coupon.startDate": 1};
 
        const filterDistance : any = filter.coordinates ? {
             $geoNear: {
