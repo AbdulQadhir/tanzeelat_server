@@ -54,7 +54,6 @@ export class CatalogResolver {
     ): Promise<Catalog[]> {
         console.log(catalogId);
         const _tmp = await CatalogModel.findById(catalogId);
-        console.log(_tmp);
         const vendorId = _tmp.vendorId;
         
         const catalogs = await CatalogModel.aggregate([

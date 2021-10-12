@@ -25,8 +25,8 @@ export class ProductInput {
     @Field()
     productCategoryId: string;
 
-    @Field()
-    productSubCategoryId: string;
+    @Field({ nullable: true })
+    productSubCategoryId?: string;
 
     @Field(() => GraphQLUpload,{ nullable: true })
     image: Upload;
@@ -37,6 +37,9 @@ export class ProductFilters {
 
     @Field({nullable: true})
     productSubCategoryId: string;
+
+    @Field({nullable: true})
+    productCategoryId: string;
 
     @Field({nullable: true})
     search?: string;

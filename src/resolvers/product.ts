@@ -20,9 +20,10 @@ export class ProductResolver {
         @Arg("filter") filter: ProductFilters
     ): Promise<Product[]> {
 
+        console.log(filter);
 
-       const filterCategory = filter.productSubCategoryId != "0" ? {
-            "productSubCategoryId" : Types.ObjectId(filter.productSubCategoryId)
+       const filterCategory = filter.productCategoryId != "0" ? {
+            "productCategoryId" : Types.ObjectId(filter.productCategoryId)
         } : {};
 
         const products = await ProductModel.aggregate([
