@@ -56,7 +56,7 @@ export class CouponResolver {
 
        const filterDistance : any = filter.coordinates ? {
             $geoNear: {
-                near: { type: "Point", coordinates: filter.coordinates },
+                near: { type: "Point", coordinates: [24.2023201,55.7657058] },
                 distanceField: "distance",
                 spherical: true
             }

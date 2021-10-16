@@ -51,8 +51,11 @@ export class CatalogResolver {
     @Query(() => [Catalog])
     async otherCatalogsOfVendor(
         @Arg("catalogId") catalogId : string,
+        @Arg("state") state : string,
     ): Promise<Catalog[]> {
-        console.log(catalogId);
+        
+        const today = new Date();
+
         const _tmp = await CatalogModel.findById(catalogId);
         const vendorId = _tmp.vendorId;
         
@@ -62,7 +65,10 @@ export class CatalogResolver {
                     vendorId: Types.ObjectId(vendorId),
                     _id: {
                       $ne: Types.ObjectId(catalogId)
-                    }
+                    },
+                    status: "ACCEPTED",
+                    expiry: { $gte : today },
+                    startDate: { $lte : today }
                 }
             },
             {
@@ -71,6 +77,11 @@ export class CatalogResolver {
                     localField: 'outlets',
                     foreignField: '_id',
                     as: 'outlets'
+                }
+            },
+            {
+                $match: {
+                    'outlets.state': state
                 }
             },
             {
