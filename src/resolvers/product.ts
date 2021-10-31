@@ -61,6 +61,7 @@ export class ProductResolver {
     async productsByVendor(
         @Arg("vendorId") vendorId: string
     ): Promise<ProductListResponse[]> {
+        console.log(vendorId);
         return await ProductModel.aggregate([
             {
                 $match: {
@@ -71,7 +72,7 @@ export class ProductResolver {
                 $group: {
                     _id: "$productSubCategoryId",
                     productSubCategoryId: {
-                      $first: "$productSubCategoryId"
+                      $first: "$productCategoryId"
                       },
                     products: {
                       "$push": { 
@@ -84,7 +85,7 @@ export class ProductResolver {
             },
             {
                 $lookup: {
-                    from: 'productsubcategories',
+                    from: 'productcategories',
                     localField: 'productSubCategoryId',
                     foreignField: '_id',
                     as: 'subcategory'

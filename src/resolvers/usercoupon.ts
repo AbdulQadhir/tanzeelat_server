@@ -19,6 +19,7 @@ export class UserCouponResolver {
         @Arg("couponString") couponString: String,
         @Ctx() ctx: Context
     ): Promise<CouponRedeemOutput> {
+        console.log(couponString);
         if(couponString == "Invalid Coupon")
             return {
                 result: false,
@@ -40,12 +41,14 @@ export class UserCouponResolver {
 
         var publicKEY  = fs.readFileSync('src/keys/public.key', 'utf8');
         try {
-            var decoded = jwt.verify(custToken,  publicKEY);
+            var decoded = jwt.verify(custToken,  publicKEY, {ignoreExpiration: true});
             if(decoded?.userId)
                 userId = decoded?.userId;
         } catch(err) {
-            //console.log("err",err)
+            console.log("err",err)
         }
+
+        console.log(userId);
 
         const vendorUser = await VendorUserModel.findById(vendorUserId);
         const outletId = vendorUser.outlets[0] || "";

@@ -48,6 +48,14 @@ export class Product {
   @prop()
   @Field(()=>Vendor,{nullable: true})
   vendor?: Vendor;
+
+  @prop()
+  @Field({nullable: true})
+  catalogId?: string;
+
+  @prop()
+  @Field({nullable: true})
+  pageNo?: number;
 }
 
 const productSchema = new Schema({
@@ -59,7 +67,9 @@ const productSchema = new Schema({
   vendorId: { type: Mongoose.Types.ObjectId, ref: "Vendor" },
   productCategoryId: { type: Mongoose.Types.ObjectId, ref: "ProductCategories" },
   productSubCategoryId: { type: Mongoose.Types.ObjectId, ref: "ProductSubCategories" },
-  image: String
+  image: String,
+  catalogId: { type: Mongoose.Types.ObjectId, ref: "Catalog" },
+  pageNo: Number,
 });
 
 const ProductModel : Model<any> = Mongoose.model('Product', productSchema);
