@@ -73,6 +73,9 @@ export class CatalogOutput {
   @Field(() => [String],{nullable: true})
   pages: string[];
 
+  @Field(() => [String],{nullable: true})
+  thumbnails: string[];
+
   @Field(() => [Number],{nullable: true})
   distance?: Number[];
 
@@ -111,6 +114,9 @@ export class ActiveCatalogOutputItem {
 
   @Field(() => [String],{nullable: true})
   pages: string[];
+
+  @Field(() => [String],{nullable: true})
+  thumbnails: string[];
 
   @Field(() => [VendorOutlet])
   outlets: VendorOutlet[];

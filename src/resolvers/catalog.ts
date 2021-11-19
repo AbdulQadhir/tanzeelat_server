@@ -9,6 +9,7 @@ import { checkVendorAccess } from "./auth";
 import { CatalogStatus } from "../enums/catalogstatus.enum";
 import VendorOutletModel from "../models/VendorOutlet";
 import VendorUserModel from "../models/VendorUser";
+import sharp from 'sharp';
 
 const path = require("path");
  
@@ -132,6 +133,7 @@ export class CatalogResolver {
                     titlear: 1,
                     outlets: 1,
                     pages: 1,
+                    thumbnails: 1,
                     outletCopy : "$outlets",
                     catalogCategoryId: 1,
                     catalogId: "$_id",
@@ -221,6 +223,7 @@ export class CatalogResolver {
                           shopname: "$vendor.shopname"
                         },
                         pages: "$pages",
+                        thumbnails: "$thumbnails",
                         outlets: "$outlets",
                         expiry: "$expiry"
                       }
@@ -263,6 +266,7 @@ export class CatalogResolver {
                     titlear: 1,
                     outlets: 1,
                     pages: 1,
+                    thumbnails: 1,
                     outletCopy : "$outlets",
                     catalogCategoryId: 1,
                     catalogId: "$_id",
@@ -338,6 +342,7 @@ export class CatalogResolver {
                       shopname: "$vendor.shopname"
                     },
                     pages: "$pages",
+                    thumbnails: "$thumbnails",
                     outlets: "$outlets",
                     expiry: "$expiry"
                 }
@@ -414,6 +419,7 @@ export class CatalogResolver {
                     status: "$catalogs.status",
                     startDate: "$catalogs.startDate",
                     pages: "$catalogs.pages",
+                    thumbnails: "$catalogs.thumbnails",
                     "vendor._id" : 1,
                     "vendor.shopname": 1,
                     "vendor.logo": 1,
@@ -584,6 +590,62 @@ export class CatalogResolver {
         const user = new CatalogModel({...input});
         const result = await user.save()
         return result;
+    }
+
+
+    @Mutation(() => Boolean)
+    async genThumbnails(
+        @Arg("id") id: string
+    ): Promise<Boolean> {
+        const catalog = await CatalogModel.findById(id);
+        if(!catalog) return false;
+
+
+
+        var images: any[] = [];
+
+        for(const page of catalog.pages)
+        {
+            const img = await this.getS3PathFromURL(page);
+        }
+
+
+        await CatalogModel.findByIdAndUpdate(id,{
+            $set: {
+                thumbnails: images
+            }
+        })
+        
+        return true;
+    }
+    
+    getS3PathFromURL = async(url:string) => {
+        return new Promise((resolve, reject) => {
+            
+        const s3 = new AWS.S3({
+            accessKeyId: ID,
+            secretAccessKey: SECRET
+        });
+        var request = require('request').defaults({ encoding: null });
+
+        request.get(url, async function (error: any, response: { statusCode: number; headers: { [x: string]: string; }; }, body: WithImplicitCoercion<ArrayBuffer | SharedArrayBuffer>) {
+            if (!error && response.statusCode == 200) {
+                // const data = "data:" + response.headers["content-type"] + ";base64," + Buffer.from(body).toString('base64');
+                // console.log(data);
+
+                const buffer = await sharp(Buffer.from(body)).resize({ width: 200 }).toBuffer();
+                const { Location } = await s3.upload({ // (C)
+                    Bucket: BUCKET_NAME,
+                    Body: buffer,               
+                    Key: `${uuidv4()}${path.extname(url)}`,  
+                    ContentType: "image"                   
+                }).promise();      
+                resolve(Location);
+                }
+                else
+                reject("");
+        });
+    })
     }
 
     @Mutation(() => UploadRespType)

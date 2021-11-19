@@ -61,6 +61,10 @@ export class Catalog {
   pages: string[];
 
   @prop()
+  @Field(() => [String],{nullable: true})
+  thumbnails: string[];
+
+  @prop()
   @Field(()=>Boolean, {nullable: true})
   enabled: Boolean;
 }
@@ -75,6 +79,7 @@ const catalogSchema = new Schema({
   catalogCategoryId: { type: Mongoose.Types.ObjectId, ref: "CatalogCategories" },
   outlets: [{ type: Mongoose.Types.ObjectId, ref: "VendorOutlet" }],
   pages: [String],
+  thumbnails: [String],
   enabled: { type: Boolean, default: true }
 });
 
