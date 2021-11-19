@@ -607,6 +607,7 @@ export class CatalogResolver {
         for(const page of catalog.pages)
         {
             const img = await this.getS3PathFromURL(page);
+            images.push(img);
         }
 
 
