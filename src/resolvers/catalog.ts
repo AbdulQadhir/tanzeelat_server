@@ -458,6 +458,9 @@ export class CatalogResolver {
                     pages: {
                         $first: "$pages"
                     },
+                    thumbnails: {
+                        $first: "$thumbnails"
+                    },
                     vendor: {
                         $first: {
                             "_id": "$vendor._id",
