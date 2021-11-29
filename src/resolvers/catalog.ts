@@ -586,6 +586,19 @@ export class CatalogResolver {
         return true;
     }
 
+    @Mutation(() => Boolean)
+    async updCatalogExpDate(
+        @Arg("catalogId") catalogId: string,
+        @Arg("expiry") expiry: string
+    ): Promise<Boolean> {
+        await CatalogModel.findByIdAndUpdate(catalogId,{
+            $set:{
+                expiry
+            }
+        })
+        return true;
+    }
+
     @Mutation(() => Catalog)
     async addCatalog(
         @Arg("input") input: CatalogInput
