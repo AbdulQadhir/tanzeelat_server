@@ -35,6 +35,10 @@ export class User {
   @prop()
   @Field({nullable: true})
   verified: boolean;
+
+  @prop()
+  @Field({nullable: true})
+  playerId: string;
 }
 
 const UserModel : Model<any> = getModelForClass(User); 

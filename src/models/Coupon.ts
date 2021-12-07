@@ -43,6 +43,10 @@ export class Coupon {
   vendorId: string;
 
   @prop()
+  @Field({nullable: true})
+  terms?: string;
+
+  @prop()
   @Field(()=>Number,{nullable: true})
   redeemLimit?: Number;
 
@@ -71,6 +75,10 @@ export class Coupon {
   menu?: string;
 
   @prop()
+  @Field({nullable: true}) 
+  thumbnail?: string;
+
+  @prop()
   @Field({nullable: true})
   userCouponId: string;
 
@@ -84,6 +92,7 @@ const couponSchema = new Schema({
   namear: String,
   description: String,
   descriptionar: String,
+  terms: String,
   startDate: Date,
   endDate: Date,
   vendorId: { type: Mongoose.Types.ObjectId, ref: "Vendor" },
@@ -91,6 +100,7 @@ const couponSchema = new Schema({
   couponSubCategoryId: { type: Mongoose.Types.ObjectId, ref: "CouponSubCategories" },
   outlets: [{ type: Mongoose.Types.ObjectId, ref: "VendorOutlet" }],
   menu: String,
+  thumbnail: String,
   redeemLimit: Number,
   featured: Number
 });

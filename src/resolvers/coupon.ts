@@ -26,6 +26,7 @@ export class CouponResolver {
        // const userId = ctx.userId || "";
 
        console.log(filter);
+       const today = new Date();
 
        const filterState = filter.state != "" ? {
            "state" : filter.state
@@ -56,7 +57,7 @@ export class CouponResolver {
 
        const filterDistance : any = filter.coordinates ? {
             $geoNear: {
-                near: { type: "Point", coordinates: [24.2023201,55.7657058] },
+                near: { type: "Point", coordinates: filter.coordinates },
                 distanceField: "distance",
                 spherical: true
             }
@@ -134,12 +135,14 @@ export class CouponResolver {
                     "coupon.description": "$coupon.description",
                     "coupon.endDate": "$coupon.endDate",
                     "coupon.startDate": "$coupon.startDate",
+                    "coupon.thumbnail": "$coupon.thumbnail",
                     "coupon.featured": "$coupon.featured",
                 }
             },
             {
                 $match : {
-                    ...filterSearch
+                    ...filterSearch,
+                    "coupon.endDate": { $gte : today }
                 }
             },
             {
@@ -330,6 +333,7 @@ export class CouponResolver {
     ): Promise<Coupon> {
         
         let menu = "";
+        let thumbnail = "";
         if(input.menu)
         {
             const s3 = new AWS.S3({
@@ -345,7 +349,22 @@ export class CouponResolver {
             }).promise();          
             menu = Location;
         }
-        const coupon = new CouponModel({...input,menu});
+        if(input.thumbnail)
+        {
+            const s3 = new AWS.S3({
+                accessKeyId: ID,
+                secretAccessKey: SECRET
+            });  
+            const { createReadStream, filename, mimetype } = await input.thumbnail;
+            const { Location } = await s3.upload({ // (C)
+                Bucket: BUCKET_NAME,
+                Body: createReadStream(),               
+                Key: `${uuidv4()}${path.extname(filename)}`,  
+                ContentType: mimetype                   
+            }).promise();          
+            thumbnail = Location;
+        }
+        const coupon = new CouponModel({...input,menu,thumbnail});
         const result = await coupon.save();
         return result;
     }
@@ -355,6 +374,7 @@ export class CouponResolver {
         @Arg("input") input: CouponInput,
         @Arg("id") id: string
     ): Promise<Coupon> {
+        console.log(input.menu);
         let replace : any = {};
         replace = {
         // const result = await CouponModel.findByIdAndUpdate(id,{
@@ -365,6 +385,7 @@ export class CouponResolver {
                 descriptionar: input.descriptionar,
                 startDate: input.startDate,
                 endDate: input.endDate,
+                terms: input.terms,
                 couponCategoryId: input.couponCategoryId,
                 couponSubCategoryId: input.couponSubCategoryId,
                 outlets: input.outlets,
@@ -402,10 +423,40 @@ export class CouponResolver {
                 }
             console.log(Location);
             replace.$set["menu"] = Location;
-            } 
+        } 
+        if(input.thumbnail)
+        {
+            const user = await CouponModel.findById(id);
+            
+            const s3 = new AWS.S3({
+                accessKeyId: ID,
+                secretAccessKey: SECRET
+            });
+    
+            const { createReadStream, filename, mimetype } = await input.thumbnail;
+
+            const { Location } = await s3.upload({ // (C)
+                Bucket: BUCKET_NAME,
+                Body: createReadStream(),               
+                Key: `${uuidv4()}${path.extname(filename)}`,  
+                ContentType: mimetype                   
+            }).promise();       
+
+            if(user.thumbnail)
+                try {
+                    await s3.deleteObject({
+                        Bucket: BUCKET_NAME,
+                        Key: user.logo.split('/').pop()
+                    }).promise()
+                    console.log("file deleted Successfully")
+                }
+                catch (err) {
+                    console.log("ERROR in file Deleting : " + JSON.stringify(err))
+                }
+            console.log(Location);
+            replace.$set["thumbnail"] = Location;
+        } 
         const result = await CouponModel.findByIdAndUpdate(id, replace);
         return result;     
-        // });
-        // return result;
     }
 }

@@ -130,15 +130,18 @@ export class UserResolver {
         @Arg("field") field : string,
         @Arg("value") value : string
     ): Promise<Boolean> {
+
         const userId = ctx.userId;
 
         let update = {};
         if(field == "name")
             update = {name: value};
-        else if(field = "mobile")
+        else if(field == "mobile")
             update = {mobile: value};
-        else if(field = "email")
+        else if(field == "email")
             update = {email: value};
+        else if(field == "playerId")
+            update = {playerId: value};
 
         await UserModel.findByIdAndUpdate(userId,update);
 

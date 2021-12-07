@@ -32,6 +32,9 @@ export class CouponInput {
     couponCategoryId: string;
 
     @Field({nullable: true})
+    terms: string;
+
+    @Field({nullable: true})
     couponSubCategoryId?: string;
 
     @Field(() => [String])
@@ -39,6 +42,9 @@ export class CouponInput {
 
     @Field(()=> GraphQLUpload,{nullable: true})
     menu:  Upload;
+
+    @Field(()=> GraphQLUpload,{nullable: true})
+    thumbnail:  Upload;
 
     @Field(()=> Number,{nullable: true})
     redeemLimit: Number;

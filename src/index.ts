@@ -26,6 +26,7 @@ import { AuthResolver } from "./resolvers/auth";
 import { VendorUserResolver } from "./resolvers/vendoruser";
 import { HelpResolver } from "./resolvers/help";
 import { LogResolver } from "./resolvers/logs";
+import { NotificationResolver } from "./resolvers/notification";
 
 const fs   = require('fs');
 const jwt  = require('jsonwebtoken');
@@ -61,7 +62,8 @@ const startServer = async() => {
                 AuthResolver,
                 VendorUserResolver,
                 HelpResolver,
-                LogResolver
+                LogResolver,
+                NotificationResolver
             ]
         }),
         uploads: false,
