@@ -13,6 +13,14 @@ export class CatalogCatagoriesResolver {
         return cats;
     }
 
+    @Query(() => CatalogCategories)
+    async catalogCategoryDt(
+        @Arg("id") id : String
+    ): Promise<CatalogCategories> {
+        const CatalogCategory = await CatalogCategoriesModel.findById(id);
+        return CatalogCategory;
+    }
+
     @Mutation(() => CatalogCategories)
     async addCatalogCategory(
         @Arg("input") input: CatalogCategoryInput,
@@ -24,6 +32,20 @@ export class CatalogCatagoriesResolver {
             
         const user = new CatalogCategoriesModel({...input});
         const result = await user.save();
+        return result;
+    }
+
+    @Mutation(() => CatalogCategories)
+    async updCatalogCategory(
+        @Arg("input") input: CatalogCategoryInput,
+        @Arg("id") id: String
+    ): Promise<CatalogCategories> {
+        const result = await CatalogCategoriesModel.findByIdAndUpdate(id, {
+            $set: {
+                name: input.name,
+                namear: input.namear
+            }
+        })
         return result;
     }
 }

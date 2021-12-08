@@ -60,4 +60,62 @@ export class CouponSubCatagoriesResolver {
         console.log(item);
         return result;
     }
+
+    @Mutation(() => CouponSubCategories)
+    async updCouponSubCategory(
+        @Arg("input") input: CouponSubCategoryInput,
+        @Arg("id") id: string
+    ): Promise<CouponSubCategories> {
+        let replace : any = {};
+        replace = {
+            $set:{
+                name: input.name,
+                namear: input.namear,
+                couponCategoryId:input.couponCategoryId                
+            }
+        } 
+        if(input.image)
+        {
+            const user = await CouponSubCategoriesModel.findById(id);
+            
+            const s3 = new AWS.S3({
+                accessKeyId: ID,
+                secretAccessKey: SECRET
+            });
+    
+            const { createReadStream, filename, mimetype } = await input.image;
+
+            const { Location } = await s3.upload({ // (C)
+                Bucket: BUCKET_NAME,
+                Body: createReadStream(),               
+                Key: `${uuidv4()}${path.extname(filename)}`,  
+                ContentType: mimetype                   
+            }).promise();       
+
+            if(user.image)
+                try {
+                    await s3.deleteObject({
+                        Bucket: BUCKET_NAME,
+                        Key: user.image.split('/').pop()
+                    }).promise()
+                    console.log("file deleted Successfully")
+                }
+                catch (err) {
+                    console.log("ERROR in file Deleting : " + JSON.stringify(err))
+                }
+            console.log(Location);
+            replace.$set["image"] = Location;
+            } 
+        const result = await CouponSubCategoriesModel.findByIdAndUpdate(id, replace);
+        return result;     
+    }
+
+
+    @Query(() => CouponSubCategories)
+    async couponSubCategoryDt(
+        @Arg("id") id : String
+    ): Promise<CouponSubCategories> {
+        const CouponSubCategory = await CouponSubCategoriesModel.findById(id);
+        return CouponSubCategory;
+    }
 }
