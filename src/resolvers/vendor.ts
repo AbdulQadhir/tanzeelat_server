@@ -184,6 +184,38 @@ export class VendorResolver {
             
             replace.$set["logo"] = Location;
         }
+        if(input.shopimage)
+        {
+            const user = await VendorModel.findById(id);
+            
+            const s3 = new AWS.S3({
+                accessKeyId: ID,
+                secretAccessKey: SECRET
+            });
+    
+            const { createReadStream, filename, mimetype } = await input.shopimage;
+
+            const { Location } = await s3.upload({ // (C)
+                Bucket: BUCKET_NAME,
+                Body: createReadStream(),               
+                Key: `${uuidv4()}${path.extname(filename)}`,  
+                ContentType: mimetype                   
+            }).promise();       
+
+            if(user.shopimage)
+                try {
+                    await s3.deleteObject({
+                        Bucket: BUCKET_NAME,
+                        Key: user.shopimage.split('/').pop()
+                    }).promise()
+                    console.log("file deleted Successfully")
+                }
+                catch (err) {
+                    console.log("ERROR in file Deleting : " + JSON.stringify(err))
+                }
+            
+            replace.$set["shopimage"] = Location;
+        }
 
         const result = await VendorModel.findByIdAndUpdate(id, replace);
         return result;
@@ -194,6 +226,7 @@ export class VendorResolver {
         @Arg("input") input: AddVendorInput
     ): Promise<Vendor> {
         let img = "";
+        let shopimg = "";
 
         if(input.logo)
         {
@@ -214,7 +247,27 @@ export class VendorResolver {
 
             img = Location;
         }
-        const user = new VendorModel({...input,logo:img});
+        if(input.shopimage)
+        {
+            
+            const s3 = new AWS.S3({
+                accessKeyId: ID,
+                secretAccessKey: SECRET
+            });
+    
+            const { createReadStream, filename, mimetype } = await input.shopimage;
+
+            const { Location } = await s3.upload({ // (C)
+                Bucket: BUCKET_NAME,
+                Body: createReadStream(),               
+                Key: `${uuidv4()}${path.extname(filename)}`,  
+                ContentType: mimetype                   
+            }).promise();       
+
+            shopimg = Location;
+        }
+
+        const user = new VendorModel({...input,logo:img,shopimage:shopimg});
 
         const result = await user.save();
 

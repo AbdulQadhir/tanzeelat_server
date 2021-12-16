@@ -60,6 +60,9 @@ export class AddVendorInput {
   
     @Field({ nullable: true })
     subtitle?: string;
+
+    @Field(() => GraphQLUpload,{ nullable: true })
+    shopimage: Upload;
   }
 
 @InputType()

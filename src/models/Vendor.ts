@@ -81,6 +81,10 @@ export class Vendor {
   @prop()
   @Field()
   grade: number;
+
+  @prop()
+  @Field({nullable: true})
+  shopimage: string;
 }
 
 const vendorSchema = new Schema({
@@ -100,6 +104,7 @@ const vendorSchema = new Schema({
   grade: Number,
   about: String,
   subtitle: String,
+  shopimage: String,
   active : {type: Boolean, default: true}
 });
 
