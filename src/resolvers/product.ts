@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { Resolver, Query, Arg, Mutation } from "type-graphql"
-import { ProductFilters, ProductInput, ProductListResponse } from "../gqlObjectTypes/product.type";
+import { ProductBulkInput, ProductBulkListInput, ProductFilters, ProductInput, ProductListResponse } from "../gqlObjectTypes/product.type";
 import { v4 as uuidv4 } from 'uuid';
 import ProductModel, { Product } from "../models/Products";
 import { Types } from "mongoose";
@@ -106,6 +106,33 @@ export class ProductResolver {
         ]);
     }
     
+    @Query(() => [Product])
+    async productsInCatalog(
+        @Arg("input") input: ProductBulkListInput,
+    ): Promise<Product[]> {
+        return await ProductModel.aggregate([
+            {
+                $match: {
+                    "catalogId": Types.ObjectId(input.catalogId),
+                    pageNo: input.pageNo
+                }
+            },
+            {
+                $lookup: {
+                    from: 'productcategories',
+                    localField: 'productCategoryId',
+                    foreignField: '_id',
+                    as: 'productCategory'
+                }
+            },
+            {
+                $unwind: {
+                    path: "$productCategory",
+                }
+            }
+        ]);
+    }
+    
     @Mutation(() => Product)
     async addProduct(
         @Arg("input") input: ProductInput
@@ -148,10 +175,74 @@ export class ProductResolver {
         return result;
     }
     
+    @Mutation(() => Product)
+    async addProductBulk(
+        @Arg("input") input: ProductBulkInput
+    ): Promise<Product> {
+
+        const s3 = new AWS.S3({
+            accessKeyId: ID,
+            secretAccessKey: SECRET
+        });
+
+        let image = "";
+
+        if(input.image)
+        {
+            const { createReadStream, filename, mimetype } = await input.image;
+
+            const { Location } = await s3.upload({ // (C)
+                Bucket: BUCKET_NAME,
+                Body: createReadStream(),               
+                Key: `${uuidv4()}${path.extname(filename)}`,  
+                ContentType: mimetype                   
+            }).promise();    
+            
+            console.log(Location);
+            image = Location;
+        }
+
+        const product = new ProductModel({
+            name: input.name,
+            namear: input.namear,
+            price: input.price,
+            offerPrice: input.offerPrice,
+            vendorId: input.vendorId,
+            catalogId: input.catalogId,
+            pageNo: input.pageNo,
+            productCategoryId: input.productCategoryId,
+            productSubCategoryId: input.productSubCategoryId,
+            image
+        })
+
+        const result = await product.save();
+        return result;
+    }
+    
     @Mutation(() => Boolean)
     async delProduct(
         @Arg("id") id: string
     ): Promise<Boolean> {   
+
+        const product = await ProductModel.findById(id);
+
+        const s3 = new AWS.S3({
+            accessKeyId: ID,
+            secretAccessKey: SECRET
+        });
+
+        if(product.image)
+        try {
+            await s3.deleteObject({
+                Bucket: BUCKET_NAME,
+                Key: product.image.split('/').pop()
+            }).promise()
+            console.log("file deleted Successfully")
+        }
+        catch (err) {
+            console.log("ERROR in file Deleting : " + JSON.stringify(err))
+        }
+        
         await ProductModel.findByIdAndDelete(id);
         return true;
     }

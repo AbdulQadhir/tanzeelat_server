@@ -84,7 +84,8 @@ export class NotificationResolver {
                 'image': image,
                 'type': 'general'
             },
-            include_player_ids: ["6020994a-b4bd-460b-8994-b5d0de76e494"]
+            included_segments: ["Active Users"]
+            // include_player_ids: ["6020994a-b4bd-460b-8994-b5d0de76e494"]
           };
           
           try {

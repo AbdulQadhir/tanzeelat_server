@@ -2,6 +2,7 @@ import { prop } from "@typegoose/typegoose";
 import { Field, ID, ObjectType } from "type-graphql";
 import Mongoose, { Model, Schema  } from "mongoose"
 import { Vendor } from "./Vendor";
+import { ProductCategories } from "./ProductCategories";
 
 @ObjectType({ description: "The Product model" })
 export class Product {
@@ -48,6 +49,10 @@ export class Product {
   @prop()
   @Field(()=>Vendor,{nullable: true})
   vendor?: Vendor;
+
+  @prop()
+  @Field(()=>ProductCategories,{nullable: true})
+  productCategory: ProductCategories;
 
   @prop()
   @Field({nullable: true})

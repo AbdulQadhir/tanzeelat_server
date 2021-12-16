@@ -32,6 +32,50 @@ export class ProductInput {
     image: Upload;
 }
 
+@InputType({ description: "Product Bulk data" })
+export class ProductBulkListInput {
+
+    @Field()
+    catalogId: string;
+
+    @Field({ nullable: true })
+    pageNo: number;
+}
+
+@InputType({ description: "Product Bulk data" })
+export class ProductBulkInput {
+
+    @Field()
+    catalogId: string;
+
+    @Field({ nullable: true })
+    pageNo: number;
+
+    @Field()
+    name: string;
+
+    @Field({ nullable: true })
+    namear: string;
+
+    @Field({ nullable: true })
+    price?: number;
+
+    @Field({ nullable: true })
+    offerPrice?: number;
+
+    @Field()
+    vendorId: string;
+
+    @Field()
+    productCategoryId: string;
+
+    @Field({ nullable: true })
+    productSubCategoryId?: string;
+
+    @Field(() => GraphQLUpload,{ nullable: true })
+    image: Upload;
+}
+
 @InputType({ description: "Product Filters" })
 export class ProductFilters {
 
