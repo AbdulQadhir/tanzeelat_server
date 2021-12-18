@@ -26,7 +26,7 @@ export class CouponResolver {
        // const userId = ctx.userId || "";
 
        console.log(filter);
-       const today = new Date();
+       const today = new Date()
 
        const filterState = filter.state != "" ? {
            "state" : filter.state
@@ -137,12 +137,13 @@ export class CouponResolver {
                     "coupon.startDate": "$coupon.startDate",
                     "coupon.thumbnail": "$coupon.thumbnail",
                     "coupon.featured": "$coupon.featured",
+                    "endDate": {$add: [ {$dateFromString :{ dateString:  {$dateToString:{format: "%Y-%m-%d", date: "$coupon.endDate"}}}},1*24*60*60000 ]}
                 }
             },
             {
                 $match : {
                     ...filterSearch,
-                    "coupon.endDate": { $gte : today }
+                    "endDate": { $gte : today }
                 }
             },
             {
@@ -169,12 +170,18 @@ export class CouponResolver {
 
         const coupon = await CouponModel.findById(couponId);
         const vendorId = coupon.vendorId;
+        const today = new Date()
 
         const coupons = await CouponModel.aggregate([
             {
+                $addFields: { "endDate1": {$add: [ {$dateFromString :{ dateString:  {$dateToString:{format: "%Y-%m-%d", date: "$endDate"}}}},1*24*60*60000 ]} } 
+            },
+            {
                 $match: {
                     vendorId : Types.ObjectId(vendorId),
-                    "_id": { $ne : Types.ObjectId(couponId) }
+                    "_id": { $ne : Types.ObjectId(couponId) },
+                    "outlets" : { $not: { $size : 0 } },
+                    "endDate1": { $gt : today }
                 }
             }
         ]);
@@ -319,13 +326,32 @@ export class CouponResolver {
     async couponSummary(
         @Arg("id") id: String
     ): Promise<CouponSummary> {
-        const sent = await UserCouponModel.count({couponId: id});
-        const redeemed = await UserCouponModel.count({couponId: id,redeemed: true});
+        const sent = await CouponModel.findById(id);
+        const redeemed = await UserCouponModel.count({couponId: id});
         return {
-            sent: sent || 0,
+            sent: sent?.redeemLimit || 0,
             redeemed: redeemed || 0
         }
     }
+    
+    // @Mutation(() => Boolean)
+    // async setCodes(
+    // ): Promise<Boolean> {
+
+    //     const cpns = await CouponModel.find();
+
+    //     for (const cpn of cpns) {
+    //         await CouponModel.updateOne({_id:cpn._id},{
+    //             $set: {
+    //                 code: Math.floor(100000 + Math.random() * 900000)
+    //             }
+    //         })
+    //       }
+
+        
+        
+    //     return true;
+    // }
 
     @Mutation(() => Coupon)
     async addCoupon(
@@ -364,7 +390,8 @@ export class CouponResolver {
             }).promise();          
             thumbnail = Location;
         }
-        const coupon = new CouponModel({...input,menu,thumbnail});
+        const code = Math.floor(100000 + Math.random() * 900000);
+        const coupon = new CouponModel({...input,menu,thumbnail,code});
         const result = await coupon.save();
         return result;
     }
