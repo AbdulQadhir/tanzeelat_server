@@ -2,7 +2,7 @@ export enum States{
     AbuDhabi = "AbuDhabi",
     Dubai = "Dubai",
     Sharjah = "Sharjah",
-    UmmAlQaiwain = "UmmAlQaiwain",
+    UmmAlQuwain = "UmmAlQuwain",
     Fujairah = "Fujairah",
     Ajman = "Ajman",
     RasAlKhaimah = "RasAlKhaimah",
