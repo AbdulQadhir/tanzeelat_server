@@ -21,6 +21,7 @@ export class ProductResolver {
     ): Promise<Product[]> {
 
         console.log(filter);
+        const today = new Date();
 
        const filterCategory = filter.productCategoryId != "0" ? {
             "productCategoryId" : Types.ObjectId(filter.productCategoryId)
@@ -46,11 +47,26 @@ export class ProductResolver {
                 }
             },
             {
+                $lookup: {
+                    from: 'catalogs',
+                    localField: 'catalogId',
+                    foreignField: '_id',
+                    as: 'catalog'
+                }
+            },
+            {
+                $unwind: {
+                    path: "$catalog",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
                 $match:{ 
                     $or : [
                         {'name' :            { '$regex' : filter.search || '', '$options' : 'i' }},
                         {'vendor.shopname' : { '$regex' : filter.search || '', '$options' : 'i' }}
-                    ]
+                    ],
+                    "catalog.expiry": { $gte : today }
                 },
             }
         ]);
