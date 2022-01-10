@@ -3,6 +3,7 @@ import { Upload } from "./catalog.type";
 import { GraphQLUpload } from "graphql-upload";
 import { Vendor } from "../models/Vendor";
 import { Coupon } from "../models/Coupon";
+import { VendorOutlet } from "../models/VendorOutlet";
 
 @InputType({ description: "New Coupon data" })
 export class CouponInput {
@@ -132,6 +133,9 @@ export class CouponFilterOutput {
 
     @Field(()=>Number,{nullable: true})
     distance?: Number
+
+    @Field(()=>VendorOutlet,{nullable: true})
+    outlet?: VendorOutlet
 
     @Field(()=>Vendor)
     vendor?: Vendor

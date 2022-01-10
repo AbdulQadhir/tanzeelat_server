@@ -15,11 +15,11 @@ export class Coupon {
   _id: string;
 
   @prop()
-  @Field()
+  @Field(({nullable: true}))
   name: string;
 
   @prop()
-  @Field()
+  @Field(({nullable: true}))
   namear: string;
 
   @prop()

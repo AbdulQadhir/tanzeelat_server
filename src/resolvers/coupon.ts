@@ -91,7 +91,7 @@ export class CouponResolver {
             {
                 $group:{
                     _id: "$coupon._id",
-                    outletname: {
+                    outletName: {
                     "$first": "$name",
                     },        
                     place: {
@@ -99,6 +99,9 @@ export class CouponResolver {
                     },
                     distance: {
                     "$first": "$distance"
+                    },
+                    workingHours: {
+                    "$first": "$workingHours"
                     },
                     count: {
                     "$sum": 1
@@ -130,6 +133,8 @@ export class CouponResolver {
                     "vendor._id": "$vendor._id",
                     "vendor.shopname": "$vendor.shopname",
                     "vendor.logo": "$vendor.logo",
+                    "outlet.name": "$outletName",
+                    "outlet.workingHours": "$workingHours",
                     "coupon.name": "$coupon.name",
                     "coupon.redeemLimit": "$coupon.redeemLimit",
                     "coupon.description": "$coupon.description",

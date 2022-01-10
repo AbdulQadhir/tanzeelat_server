@@ -20,7 +20,7 @@ export class VendorOutlet {
   vendorId: string;
 
   @prop()
-  @Field()
+  @Field({nullable: true})
   name: string;
 
   @prop()

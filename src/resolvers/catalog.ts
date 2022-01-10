@@ -257,8 +257,18 @@ export class CatalogResolver {
         const _bookmarks = bookmarks?.bookmarks?.map(el => Types.ObjectId(el.toString()));
         
         const today = new Date();
+
+        console.log(_bookmarks);
             
         const catalogs = await CatalogModel.aggregate([
+            {
+                $match:{
+                    status: "ACCEPTED",
+                    expiry: { $gte : today },
+                    startDate: { $lte : today },
+                    _id: { $in : _bookmarks }
+                }
+            },
             {
                 $project: {
                     vendorId: 1,
@@ -297,44 +307,18 @@ export class CatalogResolver {
                 }
             },
             {
-                $unwind: {
-                    path: "$outletCopy",
-                }
-            },
-            {
-                $lookup: {
-                    from: 'vendoroutlets',
-                    localField: 'outletCopy',
-                    foreignField: '_id',
-                    as: 'outlet'
-                }
-            },
-            {
-                $unwind: {
-                    path: "$outlet",
-                }
-            },
-            {
-                $match:{
-                    status: "ACCEPTED",
-                    expiry: { $gte : today },
-                    startDate: { $lte : today },
-                    _id: { $in : _bookmarks }
-                }
-            },
-            {
                 $project: {
                     _id: "$catalogId",
                     id: "$catalogId",
                     catalogCategoryId: "$catalogCategoryId",
                     title: "$title",
                     titlear: "$titlear",
-                    outletName: "$outlet.name",
+                    outletName: {$first : "$outlets.name"},
                     outlet: {
-                      "name": "$outlet.name",
-                      "namear": "$outlet.namear",
-                      "state": "$outlet.state",
-                      "place": "$outlet.place"
+                      "name": {$first : "$outlets.name"},
+                      "namear": {$first : "$outlets.namear"},
+                      "state": {$first : "$outlets.state"},
+                      "place": {$first : "$outlets.place"}
                     },
                     vendor: {
                       id: "$vendor._id",
