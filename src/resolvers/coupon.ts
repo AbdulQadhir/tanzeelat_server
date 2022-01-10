@@ -188,7 +188,15 @@ export class CouponResolver {
                     "outlets" : { $not: { $size : 0 } },
                     "endDate1": { $gt : today }
                 }
-            }
+            },
+            {
+                $lookup: {
+                    from: 'vendoroutlets',
+                    localField: 'outlets',
+                    foreignField: '_id',
+                    as: 'outletsDt'
+                }
+            },
         ]);
         
         return coupons;
