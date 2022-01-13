@@ -81,7 +81,8 @@ export class ProductResolver {
         return await ProductModel.aggregate([
             {
                 $match: {
-                    "vendorId": Types.ObjectId(vendorId)
+                    "vendorId": Types.ObjectId(vendorId),
+                    "catalogId": {$exists: false}
                 }
             },
             {

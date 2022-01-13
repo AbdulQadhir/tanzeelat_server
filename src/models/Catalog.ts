@@ -57,6 +57,10 @@ export class Catalog {
   vendor?: Vendor;
 
   @prop()
+  @Field({nullable: true})
+  pdf: string;
+
+  @prop()
   @Field(() => [String],{nullable: true})
   pages: string[];
 
@@ -79,6 +83,7 @@ const catalogSchema = new Schema({
   catalogCategoryId: { type: Mongoose.Types.ObjectId, ref: "CatalogCategories" },
   outlets: [{ type: Mongoose.Types.ObjectId, ref: "VendorOutlet" }],
   pages: [String],
+  pdf: String,
   thumbnails: [String],
   enabled: { type: Boolean, default: true }
 });

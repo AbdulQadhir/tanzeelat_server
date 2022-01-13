@@ -118,6 +118,9 @@ export class ActiveCatalogOutputItem {
   @Field(() => [String],{nullable: true})
   thumbnails: string[];
 
+  @Field({nullable: true})
+  pdf: string
+
   @Field(() => [VendorOutlet])
   outlets: VendorOutlet[];
 
@@ -173,6 +176,16 @@ export class UpdPagesInput {
 
     @Field(() => [PageInput],{ nullable: true })
     files: PageInput[];
+    
+    @Field()
+    catalogId: string;
+}
+
+@InputType()
+export class UpdPdfInput {
+
+    @Field(() => GraphQLUpload,{ nullable: true })
+    pdf: Upload;
     
     @Field()
     catalogId: string;
