@@ -762,11 +762,14 @@ export class CatalogResolver {
         let thumbs = [];
         
         for (const img  of imgs) {
-            thumbs.push(await s3.upload({ // (C)
+            const { Location }  = await s3.upload({ // (C)
                 Bucket: BUCKET_NAME,
                 Body: fs.readFileSync(img.path)        ,
                 Key: `${uuidv4()}${path.extname(filename)}`           
-            }).promise().Location); 
+            }).promise();
+            console.log(Location);
+            thumbs.push(Location);
+
         }
       
 
