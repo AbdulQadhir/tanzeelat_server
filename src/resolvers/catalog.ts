@@ -11,6 +11,8 @@ import VendorOutletModel from "../models/VendorOutlet";
 import VendorUserModel from "../models/VendorUser";
 import sharp from 'sharp';
 import { fromPath } from "pdf2pic";
+import { ToBase64Response } from "pdf2pic/dist/types/toBase64Response";
+import { WriteImageResponse } from "pdf2pic/dist/types/writeImageResponse";
 
 const fs = require('fs');
 
@@ -747,14 +749,33 @@ export class CatalogResolver {
             height: 600
           };
         const convert = fromPath(pathObj.path, options);
-          
+
+        let imgs: WriteImageResponse[] = [];
+
         if (convert.bulk)
-            convert.bulk(-1).then((resolve) => {
-                console.log(resolve);
-              
-            }).catch(err => {
-                console.log(err);
-              })
+            imgs = await convert.bulk(-1);
+        
+
+            const s3 = new AWS.S3({
+                accessKeyId: ID,
+                secretAccessKey: SECRET
+            });
+        let thumbs = [];
+        
+        for (const img  of imgs) {
+            thumbs.push(await s3.upload({ // (C)
+                Bucket: BUCKET_NAME,
+                Body: fs.readFileSync(img.path)        ,
+                Key: `${uuidv4()}${path.extname(filename)}`           
+            }).promise()); 
+        }
+      
+
+        await CatalogModel.findByIdAndUpdate("61baf30a3ac8b167a6324560",{
+            $set: {
+                thumbnails: thumbs
+            }
+        })
 
         return { result: true };
     }
