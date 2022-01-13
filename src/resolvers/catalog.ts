@@ -11,7 +11,6 @@ import VendorOutletModel from "../models/VendorOutlet";
 import VendorUserModel from "../models/VendorUser";
 import sharp from 'sharp';
 import { fromPath } from "pdf2pic";
-import { ToBase64Response } from "pdf2pic/dist/types/toBase64Response";
 import { WriteImageResponse } from "pdf2pic/dist/types/writeImageResponse";
 
 const fs = require('fs');
