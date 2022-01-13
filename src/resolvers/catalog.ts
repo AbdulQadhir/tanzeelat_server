@@ -752,7 +752,9 @@ export class CatalogResolver {
             convert.bulk(-1).then((resolve) => {
                 console.log(resolve);
               
-              });
+            }).catch(err => {
+                console.log(err);
+              })
 
         return { result: true };
     }
