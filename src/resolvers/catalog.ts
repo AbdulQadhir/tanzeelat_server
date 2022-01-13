@@ -729,12 +729,39 @@ export class CatalogResolver {
     ): Promise<UploadRespType> {
         
         let catalog = await CatalogModel.findById(pages.catalogId);
+        let _pdf = "";
+        let oldPdf = catalog.pdf;
+
+        const s3 = new AWS.S3({
+            accessKeyId: ID,
+            secretAccessKey: SECRET
+        });
 
         if(!catalog){
             return { result: false };
         }
             
-        const { createReadStream, filename } = await pages?.pdf;
+        const { createReadStream, filename, mimetype } = await pages?.pdf;
+
+        const { Location } = await s3.upload({ // (C)
+            Bucket: BUCKET_NAME,
+            Body: createReadStream(),               
+            Key: `${uuidv4()}${path.extname(filename)}`,  
+            ContentType: mimetype                   
+        }).promise();     
+        
+        if(oldPdf)
+            try {
+                await s3.deleteObject({
+                    Bucket: BUCKET_NAME,
+                    Key: oldPdf.split('/').pop()
+                }).promise()
+                console.log("file deleted Successfully")
+            }
+            catch (err) {
+                console.log("ERROR in file Deleting : " + JSON.stringify(err))
+            }
+        
 
         const stream = createReadStream();
         const pathObj : any = await storeFS(stream, filename);
@@ -755,10 +782,6 @@ export class CatalogResolver {
             imgs = await convert.bulk(-1);
         
 
-            const s3 = new AWS.S3({
-                accessKeyId: ID,
-                secretAccessKey: SECRET
-            });
         let thumbs = [];
         
         for (const img  of imgs) {
@@ -771,11 +794,14 @@ export class CatalogResolver {
             thumbs.push(Location);
 
         }
-      
+        _pdf = Location;
+        
 
-        await CatalogModel.findByIdAndUpdate("61baf30a3ac8b167a6324560",{
+        await CatalogModel.findByIdAndUpdate(pages.catalogId,{
             $set: {
-                thumbnails: thumbs
+                pdf: _pdf,
+                thumbnails: thumbs,
+                status: CatalogStatus.PENDING
             }
         })
 
