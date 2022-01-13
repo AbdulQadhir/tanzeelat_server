@@ -766,7 +766,7 @@ export class CatalogResolver {
                 Bucket: BUCKET_NAME,
                 Body: fs.readFileSync(img.path)        ,
                 Key: `${uuidv4()}${path.extname(filename)}`           
-            }).promise()); 
+            }).promise().Location); 
         }
       
 
