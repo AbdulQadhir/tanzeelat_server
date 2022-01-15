@@ -73,6 +73,9 @@ export class CatalogOutput {
   @Field(() => [String],{nullable: true})
   pages: string[];
 
+  @Field({nullable: true})
+  pdf: string;
+
   @Field(() => [String],{nullable: true})
   thumbnails: string[];
 

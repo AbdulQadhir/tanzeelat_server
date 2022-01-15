@@ -73,7 +73,8 @@ export class CatalogResolver {
                     },
                     status: "ACCEPTED",
                     expiry: { $gte : today },
-                    startDate: { $lte : today }
+                    startDate: { $lte : today },
+                    pdf: {$exists : true}
                 }
             },
             {
@@ -156,7 +157,8 @@ export class CatalogResolver {
             },
             {
                 $match:{
-                    endDate: { $gte : today }
+                    endDate: { $gte: today },
+                    pdf: {$exists : true}
                 }
             },
             {
@@ -281,7 +283,8 @@ export class CatalogResolver {
                     status: "ACCEPTED",
                     expiry: { $gte : today },
                     startDate: { $lte : today },
-                    _id: { $in : _bookmarks }
+                    _id: { $in : _bookmarks },
+                    pdf: {$exists : true}
                 }
             },
             {
@@ -291,6 +294,7 @@ export class CatalogResolver {
                     titlear: 1,
                     outlets: 1,
                     pages: 1,
+                    pdf:1,
                     thumbnails: 1,
                     outletCopy : "$outlets",
                     catalogCategoryId: 1,
@@ -341,6 +345,7 @@ export class CatalogResolver {
                       shopname: "$vendor.shopname"
                     },
                     pages: "$pages",
+                    pdf: "$pdf",
                     thumbnails: "$thumbnails",
                     outlets: "$outlets",
                     expiry: "$expiry"
@@ -418,6 +423,7 @@ export class CatalogResolver {
                     status: "$catalogs.status",
                     startDate: "$catalogs.startDate",
                     pages: "$catalogs.pages",
+                    pdf: "$catalogs.pdf",
                     thumbnails: "$catalogs.thumbnails",
                     "vendor._id" : 1,
                     "vendor.shopname": 1,
@@ -457,6 +463,9 @@ export class CatalogResolver {
                     pages: {
                         $first: "$pages"
                     },
+                    pdf: {
+                        $first: "$pdf"
+                    },
                     thumbnails: {
                         $first: "$thumbnails"
                     },
@@ -487,7 +496,8 @@ export class CatalogResolver {
                     status: "ACCEPTED",
                     'vendor.active': true,
                     expiry: { $gte : today },
-                    startDate: { $lte : today }
+                    startDate: { $lte : today },
+                    pdf: {$exists : true}
                 }
             },
             {
@@ -771,8 +781,7 @@ export class CatalogResolver {
             saveFilename: "untitled",
             savePath: "/tmp/tan_pdf",
             format: "png",
-            width: 600,
-            height: 600
+            width: 200
           };
         const convert = fromPath(pathObj.path, options);
 
