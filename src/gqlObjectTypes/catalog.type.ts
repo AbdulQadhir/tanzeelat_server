@@ -30,6 +30,9 @@ export class CatalogInput {
 
     @Field(() => [String],{nullable: true})
     pages: string[];
+
+    @Field(() => GraphQLUpload,{ nullable: true })
+    pdf: Upload;
 }
 @ObjectType({ description: "The Catalog Output" })
 export class CatalogOutput {

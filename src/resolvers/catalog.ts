@@ -612,11 +612,57 @@ export class CatalogResolver {
     async addCatalog(
         @Arg("input") input: CatalogInput
     ): Promise<Catalog> {
-        const user = new CatalogModel({...input});
+        const { createReadStream, filename, mimetype } = await input?.pdf;
+
+        const s3 = new AWS.S3({
+            accessKeyId: ID,
+            secretAccessKey: SECRET
+        });
+
+        const imgObj = await s3.upload({ // (C)
+            Bucket: BUCKET_NAME,
+            Body: createReadStream(),               
+            Key: `${uuidv4()}${path.extname(filename)}`,  
+            ContentType: mimetype                   
+        }).promise();    
+
+
+        const stream = createReadStream();
+        const pathObj : any = await storeFS(stream, filename);
+
+        const options = {
+            density: 100,
+            saveFilename: "untitled",
+            savePath: "/Users/ncod/Documents/Work",
+            format: "png",
+            width: 200,
+            height: 270
+          };
+        const convert = fromPath(pathObj.path, options);
+
+        let imgs: WriteImageResponse[] = [];
+
+        if (convert.bulk)
+            imgs = await convert.bulk(-1);
+        
+
+        let thumbs = [];
+        
+        for (const img  of imgs) {
+            const { Location }  = await s3.upload({ // (C)
+                Bucket: BUCKET_NAME,
+                Body: fs.readFileSync(img.path)        ,
+                Key: `${uuidv4()}.png`           
+            }).promise();
+            console.log(Location);
+            thumbs.push(Location);
+
+        }
+
+        const user = new CatalogModel({...input, pdf: imgObj.Location, thumbnails: thumbs});
         const result = await user.save()
         return result;
     }
-
 
     @Mutation(() => Boolean)
     async genThumbnails(
