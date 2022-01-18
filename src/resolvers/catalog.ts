@@ -633,7 +633,7 @@ export class CatalogResolver {
         const options = {
             density: 100,
             saveFilename: "untitled",
-            savePath: "/Users/ncod/Documents/Work",
+            savePath: "/tmp/tan_pdf",
             format: "png",
             width: 200,
             height: 270
