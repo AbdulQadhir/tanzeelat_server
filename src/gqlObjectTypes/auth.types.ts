@@ -1,3 +1,4 @@
+import { Vendor } from "../models/Vendor";
 import { Field, InputType, ObjectType } from "type-graphql";
 
 @InputType({ description: "Login" })
@@ -28,6 +29,9 @@ export class LoginOutput {
   
   @Field({nullable: true})
   vendorId?: string;
+  
+  @Field({nullable: true})
+  vendor?: Vendor;
 
   @Field({nullable: true})
   error?: string;

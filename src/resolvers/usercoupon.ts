@@ -2,7 +2,7 @@ import "reflect-metadata";
 import { Resolver, Query, Arg, Mutation, Ctx } from "type-graphql"
 import UserCouponModel from "../models/UserCoupon";
 import { String } from "aws-sdk/clients/cloudsearch";
-import {CouponRedeemOutput, CouponUnveil} from "../gqlObjectTypes/coupon.type"
+import {CouponRedeemOutput, CouponUnveil, HistoryItem} from "../gqlObjectTypes/coupon.type"
 import { Types } from "mongoose";
 import { Context } from "vm";
 import VendorUserModel from "../models/VendorUser";
@@ -145,5 +145,47 @@ export class UserCouponResolver {
             }
         ])
         return result?.length>0 ? result[0] : null;
+    }
+
+    @Query(() => [HistoryItem])
+    async redeemHistory(
+        @Ctx() ctx: Context,
+        @Arg("couponId") couponId: String
+    ): Promise<HistoryItem[]> {
+
+        const history = await UserCouponModel.aggregate([
+            {
+                $match: {
+                    vendorUserId: Types.ObjectId(ctx.userId),
+                    couponId: Types.ObjectId(couponId)
+                }
+            },
+            {
+                $lookup: {
+                    from: 'coupons',
+                    localField: 'couponId',
+                    foreignField: '_id',
+                    as: 'coupon'
+                }
+            },
+            {
+                $unwind: {
+                    path: "$coupon"
+                }
+            },
+            {
+                $sort: {
+                    createdAt: -1,
+                }
+            },
+            {
+                $project: {
+                    coupon_name: "$coupon.name",
+                    createdAt: { $dateToString: {date:"$createdAt"}}
+                }
+            }
+        ]);
+        
+        return history;
     }
 }

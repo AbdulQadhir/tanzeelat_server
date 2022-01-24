@@ -1,9 +1,9 @@
 import "reflect-metadata";
-import { ApolloServer } from 'apollo-server-express';
-import express from 'express';
-import mongoose from 'mongoose';
+import { ApolloServer } from "apollo-server-express";
+import express from "express";
+import mongoose from "mongoose";
 import { buildSchema } from "type-graphql";
-import { UserResolver } from './resolvers/user';
+import { UserResolver } from "./resolvers/user";
 import { VendorResolver } from "./resolvers/vendor";
 import { CatalogCatagoriesResolver } from "./resolvers/catalogcategories";
 import { VendorOutletResolver } from "./resolvers/vendoroutlet";
@@ -27,81 +27,86 @@ import { VendorUserResolver } from "./resolvers/vendoruser";
 import { HelpResolver } from "./resolvers/help";
 import { LogResolver } from "./resolvers/logs";
 import { NotificationResolver } from "./resolvers/notification";
+import { AnalyticsResolver } from "./resolvers/analytics";
 
-const fs   = require('fs');
-const jwt  = require('jsonwebtoken');
+const fs = require("fs");
+const jwt = require("jsonwebtoken");
 
-require('dotenv').config();
+require("dotenv").config();
 
-var cors = require('cors')
+var cors = require("cors");
 
-const startServer = async() => {
+const startServer = async () => {
+  const app = express();
 
-    const app = express();
+  const server = new ApolloServer({
+    schema: await buildSchema({
+      resolvers: [
+        UserResolver,
+        VendorResolver,
+        CatalogCatagoriesResolver,
+        VendorOutletResolver,
+        CatalogResolver,
+        CouponResolver,
+        CouponCatagoriesResolver,
+        CouponSubCatagoriesResolver,
+        CatalogViewResolver,
+        UserCouponResolver,
+        ProductCatagoriesResolver,
+        ProductSubCatagoriesResolver,
+        ProductResolver,
+        NewsFeedResolver,
+        WarrantyCardResolver,
+        AgentResolver,
+        SuperAdminResolver,
+        AuthResolver,
+        VendorUserResolver,
+        HelpResolver,
+        LogResolver,
+        NotificationResolver,
+        AnalyticsResolver,
+      ],
+    }),
+    uploads: false,
+    context: ({ req }) => {
+      let token = req.headers?.authorization;
 
-    const server = new ApolloServer({
-        schema: await buildSchema({
-            resolvers: [
-                UserResolver, 
-                VendorResolver, 
-                CatalogCatagoriesResolver, 
-                VendorOutletResolver,
-                CatalogResolver,
-                CouponResolver,
-                CouponCatagoriesResolver,
-                CouponSubCatagoriesResolver,
-                CatalogViewResolver,
-                UserCouponResolver,
-                ProductCatagoriesResolver,
-                ProductSubCatagoriesResolver,
-                ProductResolver,
-                NewsFeedResolver,
-                WarrantyCardResolver,
-                AgentResolver,
-                SuperAdminResolver,
-                AuthResolver,
-                VendorUserResolver,
-                HelpResolver,
-                LogResolver,
-                NotificationResolver
-            ]
-        }),
-        uploads: false,
-        context: ({ req }) => {
-            let token = req.headers?.authorization;
-    
-            if(token)
-            {
-                if(token.length > 7)
-                {
-                    token = token.substr(7);
-                    var publicKEY  = fs.readFileSync('src/keys/public.key', 'utf8');
-                    try {
-                        var decoded = jwt.verify(token,  publicKEY, {ignoreExpiration: true});
-                        if(decoded?.userId)
-                            return {userId: decoded.userId, roles: decoded.roles || [], userType: decoded.userType}
-                        //console.log("decoded",decoded?.userId);
-                    } catch(err) {
-                        console.log("err0",err)
-                    }
-                }
-            }
-            return {};
-        },
-    })
+      if (token) {
+        if (token.length > 7) {
+          token = token.substr(7);
+          var publicKEY = fs.readFileSync("src/keys/public.key", "utf8");
+          try {
+            var decoded = jwt.verify(token, publicKEY, {
+              ignoreExpiration: true,
+            });
+            if (decoded?.userId)
+              return {
+                userId: decoded.userId,
+                roles: decoded.roles || [],
+                userType: decoded.userType,
+              };
+            //console.log("decoded",decoded?.userId);
+          } catch (err) {
+            console.log("err0", err);
+          }
+        }
+      }
+      return {};
+    },
+  });
 
-    app.use(graphqlUploadExpress({ maxFiles: 30 }));
-    app.use(cors())
-     
-    server.applyMiddleware({ app });
+  app.use(graphqlUploadExpress({ maxFiles: 30 }));
+  app.use(cors());
 
-    //await mongoose.connect('mongodb://localhost:27017/tanzeelat', {useNewUrlParser: true, useUnifiedTopology: true});
-    await mongoose.connect('mongodb+srv://ncod:ncod@cluster0.5eqrd.mongodb.net/tanzeelat?authSource=admin&replicaSet=atlas-249yja-shard-0&readPreference=primary&appname=MongoDB%20Compass&ssl=true', {useNewUrlParser: true, useUnifiedTopology: true});
+  server.applyMiddleware({ app });
 
+  //await mongoose.connect('mongodb://localhost:27017/tanzeelat', {useNewUrlParser: true, useUnifiedTopology: true});
+  await mongoose.connect(
+    "mongodb+srv://ncod:ncod@cluster0.5eqrd.mongodb.net/tanzeelat?authSource=admin&replicaSet=atlas-249yja-shard-0&readPreference=primary&appname=MongoDB%20Compass&ssl=true",
+    { useNewUrlParser: true, useUnifiedTopology: true }
+  );
 
-    app.listen({ port: process.env.PORT }, () => 
-        console.log(` Server ready`)
-    );
-}
+  app.listen({ port: process.env.PORT }, () => console.log(` Server ready`));
+};
 
 startServer();

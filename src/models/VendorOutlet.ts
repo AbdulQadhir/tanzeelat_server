@@ -1,12 +1,11 @@
 import { prop } from "@typegoose/typegoose";
 import { Field, ID, ObjectType } from "type-graphql";
-import Mongoose, { Model, Schema } from "mongoose"
+import Mongoose, { Model, Schema } from "mongoose";
 import { Location } from "../gqlObjectTypes/user.types";
 import { WorkingHours } from "../gqlObjectTypes/vendor.types";
 
 @ObjectType({ description: "The Vendor Outlet model" })
 export class VendorOutlet {
-  
   @prop()
   @Field(() => ID)
   id: string;
@@ -20,42 +19,42 @@ export class VendorOutlet {
   vendorId: string;
 
   @prop()
-  @Field({nullable: true})
+  @Field({ nullable: true })
   name: string;
 
   @prop()
-  @Field({nullable: true})
+  @Field({ nullable: true })
   namear?: string;
 
   @prop()
-  @Field()
+  @Field({ nullable: true })
   state: string;
 
   @prop()
-  @Field({nullable: true})
+  @Field({ nullable: true })
   place?: string;
 
-  @Field({nullable: true})
+  @Field({ nullable: true })
   distance: string;
 
   @prop()
-  @Field({nullable: true})
+  @Field({ nullable: true })
   location: Location;
 
   @prop()
-  @Field(()=>[WorkingHours],{nullable: true})
+  @Field(() => [WorkingHours], { nullable: true })
   workingHours?: WorkingHours[];
 }
 
 const LocationSchema = new Schema({
   type: String,
-  coordinates: [Number]
+  coordinates: [Number],
 });
 
 const WorkingHoursSchema = new Schema({
   active: Boolean,
   from: String,
-  to: String
+  to: String,
 });
 
 const vendorSchema = new Schema({
@@ -65,9 +64,12 @@ const vendorSchema = new Schema({
   place: String,
   state: String,
   workingHours: [WorkingHoursSchema],
-  location: LocationSchema
+  location: LocationSchema,
 });
 
-const VendorOutletModel : Model<any> = Mongoose.model('VendorOutlet', vendorSchema);
+const VendorOutletModel: Model<any> = Mongoose.model(
+  "VendorOutlet",
+  vendorSchema
+);
 
 export default VendorOutletModel;

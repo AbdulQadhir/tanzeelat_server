@@ -7,6 +7,7 @@ import { Resolver, Query, Arg } from "type-graphql"
 import { Roles } from "../enums/roles.enum";
 import { States } from "../enums/state.enum";
 import VendorUserModel from "../models/VendorUser";
+import VendorModel from "../models/Vendor";
 
 const fs   = require('fs');
 const jwt  = require('jsonwebtoken');
@@ -108,13 +109,15 @@ export class AuthResolver {
                 const vendorUser = await VendorUserModel.findOne({username: input.email});
                 if(vendorUser)
                 {
+                    const vendor = await VendorModel.findById(vendorUser.vendorId,"shopname logo")
                     if(vendorUser.password == input.password)
                         return {
                             token: getToken(vendorUser._id, [Roles.VendorManageRole], "VENDOR"),
                             roles: [Roles.VendorManageRole],
                             userType: "VENDOR",
                             id: vendorUser._id,
-                            vendorId: vendorUser.vendorId
+                            vendorId: vendorUser.vendorId,
+                            vendor
                         }
                     else
                         return {

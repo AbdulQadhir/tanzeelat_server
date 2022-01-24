@@ -1,12 +1,11 @@
 import { prop } from "@typegoose/typegoose";
 import { Field, ID, ObjectType } from "type-graphql";
-import Mongoose, { Model, Schema  } from "mongoose"
+import Mongoose, { Model, Schema } from "mongoose";
 import { VendorOutlet } from "./VendorOutlet";
 import { Vendor } from "./Vendor";
 
 @ObjectType({ description: "The Coupon model" })
 export class Coupon {
-  
   @prop()
   @Field(() => ID)
   id: string;
@@ -15,19 +14,19 @@ export class Coupon {
   _id: string;
 
   @prop()
-  @Field(({nullable: true}))
+  @Field({ nullable: true })
   name: string;
 
   @prop()
-  @Field(({nullable: true}))
+  @Field({ nullable: true })
   namear: string;
 
   @prop()
-  @Field()
+  @Field({ nullable: true })
   description: string;
 
   @prop()
-  @Field()
+  @Field({ nullable: true })
   descriptionar: string;
 
   @prop()
@@ -43,19 +42,23 @@ export class Coupon {
   vendorId: string;
 
   @prop()
-  @Field({nullable: true})
+  @Field({ nullable: true })
   terms?: string;
 
   @prop()
-  @Field(()=>Number,{nullable: true})
+  @Field({ nullable: true })
+  termsar?: string;
+
+  @prop()
+  @Field(() => Number, { nullable: true })
   redeemLimit?: Number;
 
   @prop()
-  @Field({nullable: true})
+  @Field({ nullable: true })
   couponCategoryId?: string;
 
   @prop()
-  @Field({nullable: true})
+  @Field({ nullable: true })
   couponSubCategoryId?: string;
 
   @prop()
@@ -63,31 +66,31 @@ export class Coupon {
   outlets: string[];
 
   @prop()
-  @Field(() => [VendorOutlet],{nullable: true})
+  @Field(() => [VendorOutlet], { nullable: true })
   outletsDt: VendorOutlet[];
 
   @prop()
-  @Field(() => Vendor,{nullable: true})
+  @Field(() => Vendor, { nullable: true })
   vendor: Vendor;
 
   @prop()
-  @Field({nullable: true}) 
+  @Field({ nullable: true })
   menu?: string;
 
   @prop()
-  @Field({nullable: true}) 
+  @Field({ nullable: true })
   thumbnail?: string;
 
   @prop()
-  @Field({nullable: true})
+  @Field({ nullable: true })
   userCouponId: string;
 
   @prop()
-  @Field(()=>Number,{nullable: true})
+  @Field(() => Number, { nullable: true })
   featured: Number;
 
   @prop()
-  @Field({nullable: true})
+  @Field({ nullable: true })
   code: string;
 }
 
@@ -97,19 +100,23 @@ const couponSchema = new Schema({
   description: String,
   descriptionar: String,
   terms: String,
+  termsar: String,
   startDate: Date,
   endDate: Date,
   vendorId: { type: Mongoose.Types.ObjectId, ref: "Vendor" },
   couponCategoryId: { type: Mongoose.Types.ObjectId, ref: "CouponCategories" },
-  couponSubCategoryId: { type: Mongoose.Types.ObjectId, ref: "CouponSubCategories" },
+  couponSubCategoryId: {
+    type: Mongoose.Types.ObjectId,
+    ref: "CouponSubCategories",
+  },
   outlets: [{ type: Mongoose.Types.ObjectId, ref: "VendorOutlet" }],
   menu: String,
   thumbnail: String,
   redeemLimit: Number,
   featured: Number,
-  code: String
+  code: String,
 });
 
-const CouponModel : Model<any> = Mongoose.model('Coupon', couponSchema);
+const CouponModel: Model<any> = Mongoose.model("Coupon", couponSchema);
 
 export default CouponModel;
