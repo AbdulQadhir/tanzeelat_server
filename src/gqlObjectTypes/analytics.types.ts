@@ -31,3 +31,15 @@ export class CatalogViewPlaceAnalyticsOutput {
   @Field(() => [Number], { nullable: true })
   count: Number[];
 }
+
+@ObjectType({ description: "Catalog Logs" })
+export class CouponViewAnalyticsOutput {
+  @Field(() => [Number], { nullable: true })
+  unique: Number[];
+
+  @Field(() => [Number], { nullable: true })
+  views: Number[];
+
+  @Field(() => [Number], { nullable: true })
+  redeems: Number[];
+}
