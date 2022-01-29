@@ -105,12 +105,33 @@ export class CouponUnveil {
 }
 
 @ObjectType()
+export class CouponRedeemDetails {
+  @Field({ nullable: true })
+  couponId?: string;
+
+  @Field({ nullable: true })
+  userId?: string;
+
+  @Field({ nullable: true })
+  vendorUserId?: string;
+
+  @Field({ nullable: true })
+  outletId?: string;
+
+  @Field({ nullable: true })
+  state?: string;
+}
+
+@ObjectType()
 export class CouponRedeemOutput {
   @Field({ nullable: true })
   result?: Boolean;
 
   @Field({ nullable: true })
   error?: string;
+
+  @Field(() => CouponRedeemDetails, { nullable: true })
+  details?: CouponRedeemDetails;
 }
 
 @ObjectType()
