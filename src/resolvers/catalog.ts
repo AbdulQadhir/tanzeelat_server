@@ -148,6 +148,7 @@ export class CatalogResolver {
         $match: {
           status: "ACCEPTED",
           startDate: { $lte: today },
+          enabled: true,
         },
       },
       {
