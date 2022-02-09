@@ -49,6 +49,9 @@ export class CouponInput {
   @Field(() => GraphQLUpload, { nullable: true })
   thumbnail: Upload;
 
+  @Field(() => GraphQLUpload, { nullable: true })
+  thumbnailAr: Upload;
+
   @Field(() => Number, { nullable: true })
   redeemLimit: Number;
 
