@@ -83,6 +83,10 @@ export class Coupon {
 
   @prop()
   @Field({ nullable: true })
+  thumbnailAr?: string;
+
+  @prop()
+  @Field({ nullable: true })
   userCouponId: string;
 
   @prop()
@@ -112,6 +116,7 @@ const couponSchema = new Schema({
   outlets: [{ type: Mongoose.Types.ObjectId, ref: "VendorOutlet" }],
   menu: String,
   thumbnail: String,
+  thumbnailAr: String,
   redeemLimit: Number,
   featured: Number,
   code: String,

@@ -422,6 +422,7 @@ export class CouponResolver {
   async addCoupon(@Arg("input") input: CouponInput): Promise<Coupon> {
     let menu = "";
     let thumbnail = "";
+    let thumbnailAr = "";
     if (input.menu) {
       const s3 = new AWS.S3({
         accessKeyId: ID,
@@ -456,8 +457,25 @@ export class CouponResolver {
         .promise();
       thumbnail = Location;
     }
+    if (input.thumbnailAr) {
+      const s3 = new AWS.S3({
+        accessKeyId: ID,
+        secretAccessKey: SECRET,
+      });
+      const { createReadStream, filename, mimetype } = await input.thumbnailAr;
+      const { Location } = await s3
+        .upload({
+          // (C)
+          Bucket: BUCKET_NAME,
+          Body: createReadStream(),
+          Key: `${uuidv4()}${path.extname(filename)}`,
+          ContentType: mimetype,
+        })
+        .promise();
+      thumbnailAr = Location;
+    }
     const code = Math.floor(100000 + Math.random() * 900000);
-    const coupon = new CouponModel({ ...input, menu, thumbnail, code });
+    const coupon = new CouponModel({ ...input, menu, thumbnail, thumbnailAr, code });
     const result = await coupon.save();
     return result;
   }
@@ -555,6 +573,41 @@ export class CouponResolver {
         }
       console.log(Location);
       replace.$set["thumbnail"] = Location;
+    }
+    if (input.thumbnailAr) {
+      const user = await CouponModel.findById(id);
+
+      const s3 = new AWS.S3({
+        accessKeyId: ID,
+        secretAccessKey: SECRET,
+      });
+
+      const { createReadStream, filename, mimetype } = await input.thumbnailAr;
+
+      const { Location } = await s3
+        .upload({
+          // (C)
+          Bucket: BUCKET_NAME,
+          Body: createReadStream(),
+          Key: `${uuidv4()}${path.extname(filename)}`,
+          ContentType: mimetype,
+        })
+        .promise();
+
+      if (user.thumbnailAr)
+        try {
+          await s3
+            .deleteObject({
+              Bucket: BUCKET_NAME,
+              Key: user.logo.split("/").pop(),
+            })
+            .promise();
+          console.log("file deleted Successfully");
+        } catch (err) {
+          console.log("ERROR in file Deleting : " + JSON.stringify(err));
+        }
+      console.log(Location);
+      replace.$set["thumbnailAr"] = Location;
     }
     const result = await CouponModel.findByIdAndUpdate(id, replace);
     return result;
