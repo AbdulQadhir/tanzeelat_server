@@ -164,6 +164,7 @@ export class CouponResolver {
           "coupon.endDate": "$coupon.endDate",
           "coupon.startDate": "$coupon.startDate",
           "coupon.thumbnail": "$coupon.thumbnail",
+          "coupon.thumbnailAr": "$coupon.thumbnailAr",
           "coupon.featured": "$coupon.featured",
           endDate: {
             $add: [
@@ -475,7 +476,13 @@ export class CouponResolver {
       thumbnailAr = Location;
     }
     const code = Math.floor(100000 + Math.random() * 900000);
-    const coupon = new CouponModel({ ...input, menu, thumbnail, thumbnailAr, code });
+    const coupon = new CouponModel({
+      ...input,
+      menu,
+      thumbnail,
+      thumbnailAr,
+      code,
+    });
     const result = await coupon.save();
     return result;
   }
