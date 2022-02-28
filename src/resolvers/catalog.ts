@@ -21,6 +21,11 @@ import VendorUserModel from "../models/VendorUser";
 import sharp from "sharp";
 import { fromPath } from "pdf2pic";
 import { WriteImageResponse } from "pdf2pic/dist/types/writeImageResponse";
+const azure = require("azure-storage");
+
+const blobService = azure.createBlobService(
+  "DefaultEndpointsProtocol=https;AccountName=tanzeelat;AccountKey=eVvNpa8LZFkvFuB2bDmUtfIp3+drGG9U6JOoPp2/LIEv7Mq74/VKRsJAX+pCcyB9kHv5fLm47+z4aTT0ytZrHw==;EndpointSuffix=core.windows.net"
+);
 
 const fs = require("fs");
 
@@ -657,24 +662,62 @@ export class CatalogResolver {
     return true;
   }
 
+  @Mutation(() => Boolean)
+  async addCatalog2(
+    @Arg("input") input: CatalogInput,
+    @Ctx() ctx: Context
+  ): Promise<Boolean> {
+    const { createReadStream, filename } = await input?.pdf;
+
+    let streamSize = parseInt(ctx.content_length);
+
+    const fileStream = createReadStream();
+    const _filename = `${uuidv4()}${path.extname(filename)}`;
+
+    const resp = await this.azureUpload(_filename, fileStream, streamSize);
+    console.log(resp);
+
+    return true;
+  }
+
+  azureUpload = async (filename: any, fileStream: any, streamSize: any) => {
+    return new Promise((resolve, reject) => {
+      blobService.createBlockBlobFromStream(
+        "tanzeelat",
+        filename,
+        fileStream,
+        streamSize,
+        (error: any, response: any) => {
+          if (!error) {
+            resolve(
+              `https://tanzeelat.blob.core.windows.net/tanzeelat/${response?.name}`
+            );
+          } else reject(error);
+        }
+      );
+    });
+  };
+
   @Mutation(() => Catalog)
-  async addCatalog(@Arg("input") input: CatalogInput): Promise<Catalog> {
-    const { createReadStream, filename, mimetype } = await input?.pdf;
+  async addCatalog(
+    @Arg("input") input: CatalogInput,
+    @Ctx() ctx: Context
+  ): Promise<Catalog> {
+    const { createReadStream, filename } = await input?.pdf;
 
     const s3 = new AWS.S3({
       accessKeyId: ID,
       secretAccessKey: SECRET,
     });
 
-    const imgObj = await s3
-      .upload({
-        // (C)
-        Bucket: BUCKET_NAME,
-        Body: createReadStream(),
-        Key: `${uuidv4()}${path.extname(filename)}`,
-        ContentType: mimetype,
-      })
-      .promise();
+    const fileStream = createReadStream();
+    let streamSize = parseInt(ctx.content_length);
+
+    const pdfLocation = await this.azureUpload(
+      `${uuidv4()}${path.extname(filename)}`,
+      fileStream,
+      streamSize
+    );
 
     const stream = createReadStream();
     const pathObj: any = await storeFS(stream, filename);
@@ -682,7 +725,7 @@ export class CatalogResolver {
     const options = {
       density: 100,
       saveFilename: "untitled",
-      savePath: "/tmp/tan_pdf",
+      savePath: "/Users/ncod/Documents/tmp",
       format: "png",
       width: 200,
       height: 270,
@@ -710,7 +753,7 @@ export class CatalogResolver {
 
     const user = new CatalogModel({
       ...input,
-      pdf: imgObj.Location,
+      pdf: pdfLocation,
       thumbnails: thumbs,
     });
     const result = await user.save();

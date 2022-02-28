@@ -91,7 +91,9 @@ const startServer = async () => {
           }
         }
       }
-      return {};
+      return {
+        content_length: req.headers["content-length"],
+      };
     },
   });
 
