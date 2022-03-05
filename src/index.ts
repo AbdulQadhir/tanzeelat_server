@@ -108,7 +108,7 @@ const startServer = async () => {
     { useNewUrlParser: true, useUnifiedTopology: true }
   );
 
-  app.listen({ port: process.env.PORT }, () => console.log(` Server ready`));
+  app.listen({ port: 4000 }, () => console.log(` Server ready`));
 };
 
 startServer();
