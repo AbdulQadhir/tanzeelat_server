@@ -6,7 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "alt-start": "nodemon --exec babel-node src/index.js",
-    "start": "ts-node src/index.ts"
+    "start": "ts-node src/index.ts",
+    "tsc": "tsc",
+    "start:prod": "node build/server.js"
   },
   "keywords": [],
   "author": "",
