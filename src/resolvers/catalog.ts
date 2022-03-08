@@ -88,6 +88,7 @@ export class CatalogResolver {
           status: "ACCEPTED",
           expiry: { $gte: today },
           startDate: { $lte: today },
+          enabled: true,
           pdf: { $exists: true },
         },
       },
@@ -447,6 +448,14 @@ export class CatalogResolver {
         },
       },
       {
+        $match: {
+          "catalogs.status": "ACCEPTED",
+          "catalogs.startDate": { $lte: today },
+          "catalogs.expiry": { $gte: today },
+          "catalogs.pdf": { $exists: true },
+        },
+      },
+      {
         $lookup: {
           from: "vendors",
           localField: "vendorId",
@@ -457,6 +466,11 @@ export class CatalogResolver {
       {
         $unwind: {
           path: "$vendor",
+        },
+      },
+      {
+        $match: {
+          "vendor.active": true,
         },
       },
       {
@@ -545,21 +559,12 @@ export class CatalogResolver {
         },
       },
       {
-        $match: {
-          status: "ACCEPTED",
-          "vendor.active": true,
-          expiry: { $gte: today },
-          startDate: { $lte: today },
-          pdf: { $exists: true },
-        },
-      },
-      {
         $sort: {
           "outlet.distance": 1,
         },
       },
       {
-        $limit: 7,
+        $limit: 10,
       },
     ]);
 
