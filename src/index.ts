@@ -104,8 +104,7 @@ const startServer = async () => {
 
   //await mongoose.connect('mongodb://localhost:27017/tanzeelat', {useNewUrlParser: true, useUnifiedTopology: true});
   await mongoose.connect(
-    "mongodb+srv://ncod:ncod@cluster0.5eqrd.mongodb.net/tanzeelat?authSource=admin&replicaSet=atlas-249yja-shard-0&readPreference=primary&appname=MongoDB%20Compass&ssl=true",
-    { useNewUrlParser: true, useUnifiedTopology: true }
+    "mongodb+srv://ncod:ncod@cluster0.5eqrd.mongodb.net/tanzeelat?authSource=admin&replicaSet=atlas-249yja-shard-0&readPreference=primary&appname=MongoDB%20Compass&ssl=true"
   );
 
   app.listen({ port: process.env.PORT || 8080 }, () =>

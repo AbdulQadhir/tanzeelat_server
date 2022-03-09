@@ -51,8 +51,8 @@ export class CatalogResolver {
           $match: {
             outlets: {
               $in:
-                vendorUser?.outlets.map((el: Types.ObjectId) =>
-                  Types.ObjectId(el.toString())
+                vendorUser?.outlets.map(
+                  (el: Types.ObjectId) => new Types.ObjectId(el.toString())
                 ) || [],
             },
           },
@@ -81,9 +81,9 @@ export class CatalogResolver {
     const catalogs = await CatalogModel.aggregate([
       {
         $match: {
-          vendorId: Types.ObjectId(vendorId),
+          vendorId: new Types.ObjectId(vendorId),
           _id: {
-            $ne: Types.ObjectId(catalogId),
+            $ne: new Types.ObjectId(catalogId),
           },
           status: "ACCEPTED",
           expiry: { $gte: today },
@@ -134,10 +134,10 @@ export class CatalogResolver {
         $in:
           filter.vendorId
             ?.filter((el) => el != "")
-            .map((el) => Types.ObjectId(el)) || [],
+            .map((el) => new Types.ObjectId(el)) || [],
       };
     if (filter?.category)
-      filters.catalogCategoryId = Types.ObjectId(filter.category);
+      filters.catalogCategoryId = new Types.ObjectId(filter.category);
     if (filter?.search)
       filters["$or"] = [
         { title: { $regex: filter.search, $options: "i" } },
@@ -307,7 +307,7 @@ export class CatalogResolver {
     const catalogs = await CatalogModel.aggregate([
       {
         $match: {
-          vendorId: Types.ObjectId(user.vendorId),
+          vendorId: new Types.ObjectId(user.vendorId),
           status: "ACCEPTED",
           enabled: true,
         },
@@ -326,8 +326,8 @@ export class CatalogResolver {
   async bookmarkedCatalogs(
     @Arg("bookmarks") bookmarks: BookmarkInput
   ): Promise<CatalogOutput[]> {
-    const _bookmarks = bookmarks?.bookmarks?.map((el) =>
-      Types.ObjectId(el.toString())
+    const _bookmarks = bookmarks?.bookmarks?.map(
+      (el) => new Types.ObjectId(el.toString())
     );
 
     const today = new Date();
@@ -415,9 +415,10 @@ export class CatalogResolver {
 
   @Query(() => [CatalogOutput])
   async nearCatalogs(@Arg("coords") coords: String): Promise<CatalogOutput[]> {
-    let _coords = [];
-    _coords[0] = parseFloat(coords.split(",")[0] || "") || 0;
-    _coords[1] = parseFloat(coords.split(",")[1] || "") || 0;
+    let _coords: [number, number] = [
+      parseFloat(coords.split(",")[0] || "") || 0,
+      parseFloat(coords.split(",")[1] || "") || 0,
+    ];
     //  console.log(_coords);
 
     const today = new Date();
@@ -576,7 +577,7 @@ export class CatalogResolver {
     const catalogs = await CatalogModel.aggregate([
       {
         $match: {
-          _id: Types.ObjectId(id),
+          _id: new Types.ObjectId(id),
         },
       },
       {
