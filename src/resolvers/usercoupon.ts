@@ -118,7 +118,7 @@ export class UserCouponResolver {
     const result = await UserCouponModel.aggregate([
       {
         $match: {
-          _id: Types.ObjectId(id),
+          _id: new Types.ObjectId(id),
         },
       },
       {
@@ -169,8 +169,8 @@ export class UserCouponResolver {
     const history = await UserCouponModel.aggregate([
       {
         $match: {
-          vendorUserId: Types.ObjectId(ctx.userId),
-          couponId: Types.ObjectId(couponId),
+          vendorUserId: new Types.ObjectId(ctx.userId),
+          couponId: new Types.ObjectId(couponId),
         },
       },
       {

@@ -42,7 +42,7 @@ export class CouponResolver {
     const filterCategory =
       filter.id != "0"
         ? {
-            "coupon.couponCategoryId": Types.ObjectId(filter.id),
+            "coupon.couponCategoryId": new Types.ObjectId(filter.id),
           }
         : {};
 
@@ -56,21 +56,19 @@ export class CouponResolver {
           }
         : {};
 
-    const sortBy = filter.sortBy
-      ? filter.sortBy == "new"
-        ? {
-            "coupon.startDate": 1,
-          }
-        : filter.sortBy == "near"
-        ? {
-            distance: 1,
-          }
-        : filter.sortBy == "featured"
-        ? {
-            "coupon.featured": 1,
-          }
-        : { "coupon.startDate": 1 }
-      : { "coupon.startDate": 1 };
+    // const sortByDate = { "coupon.startDate": 1 };
+    // const sortByDistance = { distance: 1 };
+    // const sortByFeatured = { "coupon.featured": 1 };
+
+    // const sortBy = filter.sortBy
+    //   ? filter.sortBy == "new"
+    //     ? sortByDate
+    //     : filter.sortBy == "near"
+    //     ? sortByDistance
+    //     : filter.sortBy == "featured"
+    //     ? sortByFeatured
+    //     : sortByDate
+    //   : sortByDate;
 
     const filterDistance: any = filter.coordinates
       ? {
@@ -189,11 +187,11 @@ export class CouponResolver {
           endDate: { $gte: today },
         },
       },
-      {
-        $sort: {
-          ...sortBy,
-        },
-      },
+      // {
+      //   $sortBy: {
+      //     ...sortBy
+      //   }
+      // },
     ];
     if (filter.coordinates) aggregation = [filterDistance, ...aggregation];
 
@@ -232,8 +230,8 @@ export class CouponResolver {
       },
       {
         $match: {
-          vendorId: Types.ObjectId(vendorId),
-          _id: { $ne: Types.ObjectId(couponId) },
+          vendorId: new Types.ObjectId(vendorId),
+          _id: { $ne: new Types.ObjectId(couponId) },
           outlets: { $not: { $size: 0 } },
           endDate1: { $gt: today },
         },
@@ -262,7 +260,7 @@ export class CouponResolver {
     const coupons = await UserCouponModel.aggregate([
       {
         $match: {
-          userId: Types.ObjectId(userId),
+          userId: new Types.ObjectId(userId),
           redeemed: false,
         },
       },
@@ -281,8 +279,8 @@ export class CouponResolver {
       },
       {
         $match: {
-          "coupons.couponSubCategoryId": Types.ObjectId(subCategoryId),
-          "coupons.vendorId": Types.ObjectId(vendorId),
+          "coupons.couponSubCategoryId": new Types.ObjectId(subCategoryId),
+          "coupons.vendorId": new Types.ObjectId(vendorId),
         },
       },
       {
@@ -323,7 +321,7 @@ export class CouponResolver {
     let coupons = await CouponModel.aggregate([
       {
         $match: {
-          _id: Types.ObjectId(id),
+          _id: new Types.ObjectId(id),
         },
       },
       {
@@ -377,7 +375,7 @@ export class CouponResolver {
     const coupons = await CouponModel.aggregate([
       {
         $match: {
-          _id: Types.ObjectId(id),
+          _id: new Types.ObjectId(id),
         },
       },
       {

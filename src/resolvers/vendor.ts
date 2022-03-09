@@ -38,8 +38,8 @@ export class VendorResolver {
     if (accessList.length == 0) return [];
     if (accessList[0] == "all") return await VendorModel.find({ active: true });
     else {
-      const _accessList = accessList?.map((id: string | number | undefined) =>
-        Types.ObjectId(id)
+      const _accessList = accessList?.map(
+        (id: string | number | undefined) => new Types.ObjectId(id)
       );
       const res = await VendorModel.find({
         $and: [{ _id: { $in: _accessList } }, { active: true }],
