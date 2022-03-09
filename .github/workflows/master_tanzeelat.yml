@@ -23,7 +23,7 @@ jobs:
 
       - name: npm install, build, and test
         run: |
-          yarn
+          yarn install --unsafe-perm
           yarn build
 
       - name: Upload artifact for deployment job
