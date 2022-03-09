@@ -23,6 +23,7 @@ jobs:
 
       - name: npm install, build, and test
         run: |
+          sudo yarn
           yarn build
 
       - name: Upload artifact for deployment job
