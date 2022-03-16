@@ -14,12 +14,11 @@ import { v4 as uuidv4 } from "uuid";
 import VendorOutletModel from "../models/VendorOutlet";
 import computeDistance from "../utils/Geo";
 import VendorUserModel from "../models/VendorUser";
+import { AZURE_CONTAINER } from "../constants/azure";
+import { azureUpload, deleteFile } from "../utils/azure";
 
 const path = require("path");
-const AWS = require("aws-sdk");
-const ID = "AKIAID3BSRIGM4OQ5J6A";
-const SECRET = "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";
-const BUCKET_NAME = "tanzeelat";
+
 @Resolver()
 export class CouponResolver {
   @Query(() => [CouponFilterOutput])
@@ -418,59 +417,56 @@ export class CouponResolver {
   // }
 
   @Mutation(() => Coupon)
-  async addCoupon(@Arg("input") input: CouponInput): Promise<Coupon> {
-    let menu = "";
-    let thumbnail = "";
-    let thumbnailAr = "";
+  async addCoupon(
+    @Arg("input") input: CouponInput,
+    @Ctx() ctx: Context
+  ): Promise<Coupon> {
+    let menu: any = null;
+    let thumbnail: any = null;
+    let thumbnailAr: any = null;
     if (input.menu) {
-      const s3 = new AWS.S3({
-        accessKeyId: ID,
-        secretAccessKey: SECRET,
-      });
-      const { createReadStream, filename, mimetype } = await input.menu;
-      const { Location } = await s3
-        .upload({
-          // (C)
-          Bucket: BUCKET_NAME,
-          Body: createReadStream(),
-          Key: `${uuidv4()}${path.extname(filename)}`,
-          ContentType: mimetype,
-        })
-        .promise();
+      const { createReadStream, filename } = await input?.menu;
+
+      const fileStream = createReadStream();
+      let streamSize = parseInt(ctx.content_length);
+
+      const Location = await azureUpload(
+        `${uuidv4()}${path.extname(filename)}`,
+        fileStream,
+        streamSize,
+        AZURE_CONTAINER.COUPON
+      );
+
       menu = Location;
     }
     if (input.thumbnail) {
-      const s3 = new AWS.S3({
-        accessKeyId: ID,
-        secretAccessKey: SECRET,
-      });
-      const { createReadStream, filename, mimetype } = await input.thumbnail;
-      const { Location } = await s3
-        .upload({
-          // (C)
-          Bucket: BUCKET_NAME,
-          Body: createReadStream(),
-          Key: `${uuidv4()}${path.extname(filename)}`,
-          ContentType: mimetype,
-        })
-        .promise();
+      const { createReadStream, filename } = await input?.thumbnail;
+
+      const fileStream = createReadStream();
+      let streamSize = parseInt(ctx.content_length);
+
+      const Location = await azureUpload(
+        `${uuidv4()}${path.extname(filename)}`,
+        fileStream,
+        streamSize,
+        AZURE_CONTAINER.COUPON
+      );
+
       thumbnail = Location;
     }
     if (input.thumbnailAr) {
-      const s3 = new AWS.S3({
-        accessKeyId: ID,
-        secretAccessKey: SECRET,
-      });
-      const { createReadStream, filename, mimetype } = await input.thumbnailAr;
-      const { Location } = await s3
-        .upload({
-          // (C)
-          Bucket: BUCKET_NAME,
-          Body: createReadStream(),
-          Key: `${uuidv4()}${path.extname(filename)}`,
-          ContentType: mimetype,
-        })
-        .promise();
+      const { createReadStream, filename } = await input?.thumbnailAr;
+
+      const fileStream = createReadStream();
+      let streamSize = parseInt(ctx.content_length);
+
+      const Location = await azureUpload(
+        `${uuidv4()}${path.extname(filename)}`,
+        fileStream,
+        streamSize,
+        AZURE_CONTAINER.COUPON
+      );
+
       thumbnailAr = Location;
     }
     const code = Math.floor(100000 + Math.random() * 900000);
@@ -488,7 +484,8 @@ export class CouponResolver {
   @Mutation(() => Coupon)
   async updateCoupon(
     @Arg("input") input: CouponInput,
-    @Arg("id") id: string
+    @Arg("id") id: string,
+    @Ctx() ctx: Context
   ): Promise<Coupon> {
     console.log(input.menu);
     let replace: any = {};
@@ -512,106 +509,60 @@ export class CouponResolver {
     if (input.menu) {
       const user = await CouponModel.findById(id);
 
-      const s3 = new AWS.S3({
-        accessKeyId: ID,
-        secretAccessKey: SECRET,
-      });
+      const { createReadStream, filename } = await input?.menu;
 
-      const { createReadStream, filename, mimetype } = await input.menu;
+      const fileStream = createReadStream();
+      let streamSize = parseInt(ctx.content_length);
 
-      const { Location } = await s3
-        .upload({
-          // (C)
-          Bucket: BUCKET_NAME,
-          Body: createReadStream(),
-          Key: `${uuidv4()}${path.extname(filename)}`,
-          ContentType: mimetype,
-        })
-        .promise();
+      const Location = await azureUpload(
+        `${uuidv4()}${path.extname(filename)}`,
+        fileStream,
+        streamSize,
+        AZURE_CONTAINER.COUPON
+      );
 
-      if (user.menu)
-        try {
-          await s3
-            .deleteObject({
-              Bucket: BUCKET_NAME,
-              Key: user.logo.split("/").pop(),
-            })
-            .promise();
-          console.log("file deleted Successfully");
-        } catch (err) {
-          console.log("ERROR in file Deleting : " + JSON.stringify(err));
-        }
+      if (user.menu) deleteFile(AZURE_CONTAINER.COUPON, user.menu);
+
       console.log(Location);
       replace.$set["menu"] = Location;
     }
     if (input.thumbnail) {
       const user = await CouponModel.findById(id);
 
-      const s3 = new AWS.S3({
-        accessKeyId: ID,
-        secretAccessKey: SECRET,
-      });
+      const { createReadStream, filename } = await input?.thumbnail;
 
-      const { createReadStream, filename, mimetype } = await input.thumbnail;
+      const fileStream = createReadStream();
+      let streamSize = parseInt(ctx.content_length);
 
-      const { Location } = await s3
-        .upload({
-          // (C)
-          Bucket: BUCKET_NAME,
-          Body: createReadStream(),
-          Key: `${uuidv4()}${path.extname(filename)}`,
-          ContentType: mimetype,
-        })
-        .promise();
+      const Location = await azureUpload(
+        `${uuidv4()}${path.extname(filename)}`,
+        fileStream,
+        streamSize,
+        AZURE_CONTAINER.COUPON
+      );
 
-      if (user.thumbnail)
-        try {
-          await s3
-            .deleteObject({
-              Bucket: BUCKET_NAME,
-              Key: user.logo.split("/").pop(),
-            })
-            .promise();
-          console.log("file deleted Successfully");
-        } catch (err) {
-          console.log("ERROR in file Deleting : " + JSON.stringify(err));
-        }
+      if (user.menu) deleteFile(AZURE_CONTAINER.COUPON, user.thumbnail);
+
       console.log(Location);
       replace.$set["thumbnail"] = Location;
     }
     if (input.thumbnailAr) {
       const user = await CouponModel.findById(id);
 
-      const s3 = new AWS.S3({
-        accessKeyId: ID,
-        secretAccessKey: SECRET,
-      });
+      const { createReadStream, filename } = await input?.thumbnailAr;
 
-      const { createReadStream, filename, mimetype } = await input.thumbnailAr;
+      const fileStream = createReadStream();
+      let streamSize = parseInt(ctx.content_length);
 
-      const { Location } = await s3
-        .upload({
-          // (C)
-          Bucket: BUCKET_NAME,
-          Body: createReadStream(),
-          Key: `${uuidv4()}${path.extname(filename)}`,
-          ContentType: mimetype,
-        })
-        .promise();
+      const Location = await azureUpload(
+        `${uuidv4()}${path.extname(filename)}`,
+        fileStream,
+        streamSize,
+        AZURE_CONTAINER.COUPON
+      );
 
-      if (user.thumbnailAr)
-        try {
-          await s3
-            .deleteObject({
-              Bucket: BUCKET_NAME,
-              Key: user.logo.split("/").pop(),
-            })
-            .promise();
-          console.log("file deleted Successfully");
-        } catch (err) {
-          console.log("ERROR in file Deleting : " + JSON.stringify(err));
-        }
-      console.log(Location);
+      if (user.menu) deleteFile(AZURE_CONTAINER.COUPON, user.thumbnailAr);
+
       replace.$set["thumbnailAr"] = Location;
     }
     const result = await CouponModel.findByIdAndUpdate(id, replace);

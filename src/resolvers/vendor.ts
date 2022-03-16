@@ -14,6 +14,8 @@ import { accessibleVendorList } from "./auth";
 import { Context } from "vm";
 import VendorOutletModel from "../models/VendorOutlet";
 import { Types } from "mongoose";
+import { AZURE_CONTAINER } from "../constants/azure";
+import { azureUpload, deleteFile } from "../utils/azure";
 
 //const bcrypt = require('bcrypt');
 //const saltRounds = 10;
@@ -22,12 +24,6 @@ const fs = require("fs");
 const jwt = require("jsonwebtoken");
 
 const path = require("path");
-
-const ID = "AKIAID3BSRIGM4OQ5J6A";
-const SECRET = "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";
-
-const BUCKET_NAME = "tanzeelat";
-const AWS = require("aws-sdk");
 
 @Resolver()
 export class VendorResolver {
@@ -144,7 +140,8 @@ export class VendorResolver {
   @Mutation(() => Vendor)
   async updateVendor(
     @Arg("input") input: AddVendorInput,
-    @Arg("id") id: String
+    @Arg("id") id: String,
+    @Ctx() ctx: Context
   ): Promise<Vendor> {
     let replace: any = {};
     replace = {
@@ -169,70 +166,38 @@ export class VendorResolver {
     if (input.logo) {
       const user = await VendorModel.findById(id);
 
-      const s3 = new AWS.S3({
-        accessKeyId: ID,
-        secretAccessKey: SECRET,
-      });
+      const { createReadStream, filename } = await input?.logo;
 
-      const { createReadStream, filename, mimetype } = await input.logo;
+      const fileStream = createReadStream();
+      let streamSize = parseInt(ctx.content_length);
 
-      const { Location } = await s3
-        .upload({
-          // (C)
-          Bucket: BUCKET_NAME,
-          Body: createReadStream(),
-          Key: `${uuidv4()}${path.extname(filename)}`,
-          ContentType: mimetype,
-        })
-        .promise();
+      const Location = await azureUpload(
+        `${uuidv4()}${path.extname(filename)}`,
+        fileStream,
+        streamSize,
+        AZURE_CONTAINER.MISC
+      );
 
-      if (user.logo)
-        try {
-          await s3
-            .deleteObject({
-              Bucket: BUCKET_NAME,
-              Key: user.logo.split("/").pop(),
-            })
-            .promise();
-          console.log("file deleted Successfully");
-        } catch (err) {
-          console.log("ERROR in file Deleting : " + JSON.stringify(err));
-        }
+      if (user.logo) deleteFile(AZURE_CONTAINER.MISC, user.logo);
 
       replace.$set["logo"] = Location;
     }
     if (input.shopimage) {
       const user = await VendorModel.findById(id);
 
-      const s3 = new AWS.S3({
-        accessKeyId: ID,
-        secretAccessKey: SECRET,
-      });
+      const { createReadStream, filename } = await input?.shopimage;
 
-      const { createReadStream, filename, mimetype } = await input.shopimage;
+      const fileStream = createReadStream();
+      let streamSize = parseInt(ctx.content_length);
 
-      const { Location } = await s3
-        .upload({
-          // (C)
-          Bucket: BUCKET_NAME,
-          Body: createReadStream(),
-          Key: `${uuidv4()}${path.extname(filename)}`,
-          ContentType: mimetype,
-        })
-        .promise();
+      const Location = await azureUpload(
+        `${uuidv4()}${path.extname(filename)}`,
+        fileStream,
+        streamSize,
+        AZURE_CONTAINER.MISC
+      );
 
-      if (user.shopimage)
-        try {
-          await s3
-            .deleteObject({
-              Bucket: BUCKET_NAME,
-              Key: user.shopimage.split("/").pop(),
-            })
-            .promise();
-          console.log("file deleted Successfully");
-        } catch (err) {
-          console.log("ERROR in file Deleting : " + JSON.stringify(err));
-        }
+      if (user.shopimage) deleteFile(AZURE_CONTAINER.MISC, user.shopimage);
 
       replace.$set["shopimage"] = Location;
     }
@@ -242,47 +207,40 @@ export class VendorResolver {
   }
 
   @Mutation(() => Vendor)
-  async registerVendor(@Arg("input") input: AddVendorInput): Promise<Vendor> {
-    let img = "";
-    let shopimg = "";
+  async registerVendor(
+    @Arg("input") input: AddVendorInput,
+    @Ctx() ctx: Context
+  ): Promise<Vendor> {
+    let img: any = "";
+    let shopimg: any = "";
 
     if (input.logo) {
-      const s3 = new AWS.S3({
-        accessKeyId: ID,
-        secretAccessKey: SECRET,
-      });
+      const { createReadStream, filename } = await input?.logo;
 
-      const { createReadStream, filename, mimetype } = await input.logo;
+      const fileStream = createReadStream();
+      let streamSize = parseInt(ctx.content_length);
 
-      const { Location } = await s3
-        .upload({
-          // (C)
-          Bucket: BUCKET_NAME,
-          Body: createReadStream(),
-          Key: `${uuidv4()}${path.extname(filename)}`,
-          ContentType: mimetype,
-        })
-        .promise();
+      const Location = await azureUpload(
+        `${uuidv4()}${path.extname(filename)}`,
+        fileStream,
+        streamSize,
+        AZURE_CONTAINER.MISC
+      );
 
       img = Location;
     }
     if (input.shopimage) {
-      const s3 = new AWS.S3({
-        accessKeyId: ID,
-        secretAccessKey: SECRET,
-      });
+      const { createReadStream, filename } = await input?.shopimage;
 
-      const { createReadStream, filename, mimetype } = await input.shopimage;
+      const fileStream = createReadStream();
+      let streamSize = parseInt(ctx.content_length);
 
-      const { Location } = await s3
-        .upload({
-          // (C)
-          Bucket: BUCKET_NAME,
-          Body: createReadStream(),
-          Key: `${uuidv4()}${path.extname(filename)}`,
-          ContentType: mimetype,
-        })
-        .promise();
+      const Location = await azureUpload(
+        `${uuidv4()}${path.extname(filename)}`,
+        fileStream,
+        streamSize,
+        AZURE_CONTAINER.MISC
+      );
 
       shopimg = Location;
     }

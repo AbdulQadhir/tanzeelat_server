@@ -1,6 +1,6 @@
 import { prop } from "@typegoose/typegoose";
 import { Field, ID, ObjectType } from "type-graphql";
-import Mongoose, { Model, Schema  } from "mongoose"
+import Mongoose, { Model, Schema } from "mongoose";
 import { VendorOutlet } from "./VendorOutlet";
 import { CatalogStatus } from "../enums/catalogstatus.enum";
 import { Vendor } from "./Vendor";
@@ -8,9 +8,8 @@ import { CatalogCategories } from "./CatalogCategories";
 
 @ObjectType({ description: "The Catalog model" })
 export class Catalog {
-  
   @prop()
-  @Field(() => ID,{nullable: true})
+  @Field(() => ID, { nullable: true })
   id?: string;
 
   @Field()
@@ -21,8 +20,8 @@ export class Catalog {
   title: string;
 
   @prop()
-  @Field()
-  titlear: string;
+  @Field({ nullable: true })
+  titlear?: string;
 
   @prop()
   @Field()
@@ -49,27 +48,27 @@ export class Catalog {
   outlets: VendorOutlet[];
 
   @prop()
-  @Field(()=>CatalogCategories,{nullable: true})
+  @Field(() => CatalogCategories, { nullable: true })
   catalogCategoryDt?: CatalogCategories;
 
   @prop()
-  @Field(()=>Vendor,{nullable: true})
+  @Field(() => Vendor, { nullable: true })
   vendor?: Vendor;
 
   @prop()
-  @Field({nullable: true})
+  @Field({ nullable: true })
   pdf: string;
 
   @prop()
-  @Field(() => [String],{nullable: true})
+  @Field(() => [String], { nullable: true })
   pages: string[];
 
   @prop()
-  @Field(() => [String],{nullable: true})
+  @Field(() => [String], { nullable: true })
   thumbnails: string[];
 
   @prop()
-  @Field(()=>Boolean, {nullable: true})
+  @Field(() => Boolean, { nullable: true })
   enabled: Boolean;
 }
 
@@ -80,14 +79,17 @@ const catalogSchema = new Schema({
   expiry: Date,
   status: { type: String, default: CatalogStatus.PENDING },
   vendorId: { type: Mongoose.Types.ObjectId, ref: "Vendor" },
-  catalogCategoryId: { type: Mongoose.Types.ObjectId, ref: "CatalogCategories" },
+  catalogCategoryId: {
+    type: Mongoose.Types.ObjectId,
+    ref: "CatalogCategories",
+  },
   outlets: [{ type: Mongoose.Types.ObjectId, ref: "VendorOutlet" }],
   pages: [String],
   pdf: String,
   thumbnails: [String],
-  enabled: { type: Boolean, default: true }
+  enabled: { type: Boolean, default: true },
 });
 
-const CatalogModel : Model<any> = Mongoose.model('Catalog', catalogSchema);
+const CatalogModel: Model<any> = Mongoose.model("Catalog", catalogSchema);
 
 export default CatalogModel;
