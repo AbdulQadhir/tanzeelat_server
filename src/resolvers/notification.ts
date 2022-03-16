@@ -7,14 +7,10 @@ import NotificationModel from "../models/Notification";
 import { Notification } from "../models/Notification";
 import UserModel from "../models/User";
 import { Context } from "vm";
+import { AZURE_CONTAINER } from "../constants/azure";
+import { azureUpload } from "../utils/azure";
 
 const path = require("path");
-
-const ID = "AKIAID3BSRIGM4OQ5J6A";
-const SECRET = "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";
-
-const BUCKET_NAME = "tanzeelat";
-const AWS = require("aws-sdk");
 
 @Resolver()
 export class NotificationResolver {
@@ -39,29 +35,24 @@ export class NotificationResolver {
 
   @Mutation(() => Boolean)
   async sendNotification(
-    @Arg("input") input: NotificationInput
+    @Arg("input") input: NotificationInput,
+    @Ctx() ctx: Context
   ): Promise<Boolean> {
-    const s3 = new AWS.S3({
-      accessKeyId: ID,
-      secretAccessKey: SECRET,
-    });
-
-    let image = "";
+    let image: any = "";
 
     if (input.image) {
-      const { createReadStream, filename, mimetype } = await input.image;
+      const { createReadStream, filename } = await input?.image;
 
-      const { Location } = await s3
-        .upload({
-          // (C)
-          Bucket: BUCKET_NAME,
-          Body: createReadStream(),
-          Key: `${uuidv4()}${path.extname(filename)}`,
-          ContentType: mimetype,
-        })
-        .promise();
+      const fileStream = createReadStream();
+      let streamSize = parseInt(ctx.content_length);
 
-      console.log(Location);
+      const Location = await azureUpload(
+        `${uuidv4()}${path.extname(filename)}`,
+        fileStream,
+        streamSize,
+        AZURE_CONTAINER.NOTIFICATION
+      );
+
       image = Location;
     }
 
@@ -104,29 +95,24 @@ export class NotificationResolver {
 
   @Mutation(() => Boolean)
   async sendUserNotification(
-    @Arg("input") input: NotificationInput
+    @Arg("input") input: NotificationInput,
+    @Ctx() ctx: Context
   ): Promise<Boolean> {
-    const s3 = new AWS.S3({
-      accessKeyId: ID,
-      secretAccessKey: SECRET,
-    });
-
-    let image = "";
+    let image: any = null;
 
     if (input.image) {
-      const { createReadStream, filename, mimetype } = await input.image;
+      const { createReadStream, filename } = await input?.image;
 
-      const { Location } = await s3
-        .upload({
-          // (C)
-          Bucket: BUCKET_NAME,
-          Body: createReadStream(),
-          Key: `${uuidv4()}${path.extname(filename)}`,
-          ContentType: mimetype,
-        })
-        .promise();
+      const fileStream = createReadStream();
+      let streamSize = parseInt(ctx.content_length);
 
-      console.log(Location);
+      const Location = await azureUpload(
+        `${uuidv4()}${path.extname(filename)}`,
+        fileStream,
+        streamSize,
+        AZURE_CONTAINER.NOTIFICATION
+      );
+
       image = Location;
     }
 

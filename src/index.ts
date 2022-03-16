@@ -84,6 +84,7 @@ const startServer = async () => {
                 userId: decoded.userId,
                 roles: decoded.roles || [],
                 userType: decoded.userType,
+                content_length: req.headers["content-length"],
               };
             //console.log("decoded",decoded?.userId);
           } catch (err) {

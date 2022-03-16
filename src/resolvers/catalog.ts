@@ -3,13 +3,10 @@ import { Resolver, Query, Arg, Mutation, Ctx } from "type-graphql";
 import CatalogModel, { Catalog } from "../models/Catalog";
 import {
   CatalogInput,
-  UpdPagesInput,
-  UploadRespType,
   CatalogFilters,
   CatalogOutput,
   ActiveCatalogOutput,
   BookmarkInput,
-  UpdPdfInput,
 } from "../gqlObjectTypes/catalog.type";
 import { v4 as uuidv4 } from "uuid";
 import { Types } from "mongoose";
@@ -18,24 +15,14 @@ import { checkVendorAccess } from "./auth";
 import { CatalogStatus } from "../enums/catalogstatus.enum";
 import VendorOutletModel from "../models/VendorOutlet";
 import VendorUserModel from "../models/VendorUser";
-import sharp from "sharp";
 import { fromPath } from "pdf2pic";
 import { WriteImageResponse } from "pdf2pic/dist/types/writeImageResponse";
-const azure = require("azure-storage");
-
-const blobService = azure.createBlobService(
-  "DefaultEndpointsProtocol=https;AccountName=tanzeelat;AccountKey=eVvNpa8LZFkvFuB2bDmUtfIp3+drGG9U6JOoPp2/LIEv7Mq74/VKRsJAX+pCcyB9kHv5fLm47+z4aTT0ytZrHw==;EndpointSuffix=core.windows.net"
-);
+import { azureUpload, azureUploadfromFile } from "../utils/azure";
+import { AZURE_CONTAINER } from "../constants/azure";
 
 const fs = require("fs");
 
 const path = require("path");
-
-const ID = "AKIAID3BSRIGM4OQ5J6A";
-const SECRET = "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";
-
-const BUCKET_NAME = "tanzeelat";
-const AWS = require("aws-sdk");
 
 @Resolver()
 export class CatalogResolver {
@@ -668,42 +655,6 @@ export class CatalogResolver {
     return true;
   }
 
-  @Mutation(() => Boolean)
-  async addCatalog2(
-    @Arg("input") input: CatalogInput,
-    @Ctx() ctx: Context
-  ): Promise<Boolean> {
-    const { createReadStream, filename } = await input?.pdf;
-
-    let streamSize = parseInt(ctx.content_length);
-
-    const fileStream = createReadStream();
-    const _filename = `${uuidv4()}${path.extname(filename)}`;
-
-    const resp = await this.azureUpload(_filename, fileStream, streamSize);
-    console.log(resp);
-
-    return true;
-  }
-
-  azureUpload = async (filename: any, fileStream: any, streamSize: any) => {
-    return new Promise((resolve, reject) => {
-      blobService.createBlockBlobFromStream(
-        "tanzeelat",
-        filename,
-        fileStream,
-        streamSize,
-        (error: any, response: any) => {
-          if (!error) {
-            resolve(
-              `https://tanzeelat.blob.core.windows.net/tanzeelat/${response?.name}`
-            );
-          } else reject(error);
-        }
-      );
-    });
-  };
-
   @Mutation(() => Catalog)
   async addCatalog(
     @Arg("input") input: CatalogInput,
@@ -711,18 +662,14 @@ export class CatalogResolver {
   ): Promise<Catalog> {
     const { createReadStream, filename } = await input?.pdf;
 
-    const s3 = new AWS.S3({
-      accessKeyId: ID,
-      secretAccessKey: SECRET,
-    });
-
     const fileStream = createReadStream();
     let streamSize = parseInt(ctx.content_length);
 
-    const pdfLocation = await this.azureUpload(
+    const pdfLocation = await azureUpload(
       `${uuidv4()}${path.extname(filename)}`,
       fileStream,
-      streamSize
+      streamSize,
+      AZURE_CONTAINER.PDF
     );
 
     const stream = createReadStream();
@@ -731,6 +678,7 @@ export class CatalogResolver {
     const options = {
       density: 100,
       saveFilename: "untitled",
+      // savePath: "/Users/ncod/Documents/tmp",
       savePath: "/tmp/tan_pdf",
       format: "png",
       width: 200,
@@ -745,15 +693,13 @@ export class CatalogResolver {
     let thumbs = [];
 
     for (const img of imgs) {
-      const { Location } = await s3
-        .upload({
-          // (C)
-          Bucket: BUCKET_NAME,
-          Body: fs.readFileSync(img.path),
-          Key: `${uuidv4()}.png`,
-        })
-        .promise();
-      console.log(Location);
+      const Location = await azureUploadfromFile(
+        `${uuidv4()}${path.extname(img.path)}`,
+        img.path,
+        AZURE_CONTAINER.THUMBNAIL
+      );
+
+      // console.log(Location);
       thumbs.push(Location);
     }
 
@@ -766,289 +712,23 @@ export class CatalogResolver {
     return result;
   }
 
-  @Mutation(() => Boolean)
-  async genThumbnails(@Arg("id") id: string): Promise<Boolean> {
-    const catalog = await CatalogModel.findById(id);
-    if (!catalog) return false;
-
-    var images: any[] = [];
-
-    for (const page of catalog.pages) {
-      const img = await this.getS3PathFromURL(page);
-      images.push(img);
-    }
-
-    await CatalogModel.findByIdAndUpdate(id, {
+  @Mutation(() => Catalog)
+  async updateCatalog(
+    @Arg("input") input: CatalogInput,
+    @Arg("id") id: string
+  ): Promise<Catalog> {
+    const result = await CatalogModel.findByIdAndUpdate(id, {
       $set: {
-        thumbnails: images,
+        title: input.title,
+        titlear: input.titlear,
+        catalogCategoryId: input.catalogCategoryId,
+        startDate: input.startDate,
+        expiry: input.expiry,
+        outlets: input.outlets,
       },
     });
 
-    return true;
-  }
-
-  getS3PathFromURL = async (url: string) => {
-    return new Promise((resolve, reject) => {
-      const s3 = new AWS.S3({
-        accessKeyId: ID,
-        secretAccessKey: SECRET,
-      });
-      var request = require("request").defaults({ encoding: null });
-
-      request.get(
-        url,
-        async function (
-          error: any,
-          response: { statusCode: number; headers: { [x: string]: string } },
-          body: WithImplicitCoercion<ArrayBuffer | SharedArrayBuffer>
-        ) {
-          if (!error && response.statusCode == 200) {
-            // const data = "data:" + response.headers["content-type"] + ";base64," + Buffer.from(body).toString('base64');
-            // console.log(data);
-
-            const buffer = await sharp(Buffer.from(body))
-              .resize({ width: 200 })
-              .toBuffer();
-            const { Location } = await s3
-              .upload({
-                // (C)
-                Bucket: BUCKET_NAME,
-                Body: buffer,
-                Key: `${uuidv4()}${path.extname(url)}`,
-                ContentType: "image",
-              })
-              .promise();
-            resolve(Location);
-          } else reject("");
-        }
-      );
-    });
-  };
-
-  @Mutation(() => UploadRespType)
-  async updCatalogPages(
-    @Arg("pages", () => UpdPagesInput) pages: UpdPagesInput
-  ): Promise<UploadRespType> {
-    const s3 = new AWS.S3({
-      accessKeyId: ID,
-      secretAccessKey: SECRET,
-    });
-
-    let catalog = await CatalogModel.findById(pages.catalogId);
-    let _pages = [...catalog.pages];
-
-    if (!catalog) return { result: false };
-
-    let i = 0;
-    for (const file of pages?.files) {
-      if (file.newImg) {
-        const { createReadStream, filename, mimetype } = await file?.newImg;
-
-        const { Location } = await s3
-          .upload({
-            // (C)
-            Bucket: BUCKET_NAME,
-            Body: createReadStream(),
-            Key: `${uuidv4()}${path.extname(filename)}`,
-            ContentType: mimetype,
-          })
-          .promise();
-
-        if (file.oldImg)
-          try {
-            await s3
-              .deleteObject({
-                Bucket: BUCKET_NAME,
-                Key: file.oldImg.split("/").pop(),
-              })
-              .promise();
-            console.log("file deleted Successfully");
-          } catch (err) {
-            console.log("ERROR in file Deleting : " + JSON.stringify(err));
-          }
-
-        console.log(Location);
-        _pages[i] = Location;
-      }
-      i++;
-    }
-
-    await CatalogModel.findByIdAndUpdate(pages.catalogId, {
-      $set: {
-        pages: _pages,
-        status: CatalogStatus.PENDING,
-      },
-    });
-
-    return { result: true };
-  }
-
-  @Mutation(() => UploadRespType)
-  async updCatalogPdf(
-    @Arg("pages", () => UpdPdfInput) pages: UpdPdfInput
-  ): Promise<UploadRespType> {
-    let catalog = await CatalogModel.findById(pages.catalogId);
-    let _pdf = "";
-    let oldPdf = catalog.pdf;
-
-    const s3 = new AWS.S3({
-      accessKeyId: ID,
-      secretAccessKey: SECRET,
-    });
-
-    if (!catalog) {
-      return { result: false };
-    }
-
-    const { createReadStream, filename, mimetype } = await pages?.pdf;
-
-    const { Location } = await s3
-      .upload({
-        // (C)
-        Bucket: BUCKET_NAME,
-        Body: createReadStream(),
-        Key: `${uuidv4()}${path.extname(filename)}`,
-        ContentType: mimetype,
-      })
-      .promise();
-
-    if (oldPdf)
-      try {
-        await s3
-          .deleteObject({
-            Bucket: BUCKET_NAME,
-            Key: oldPdf.split("/").pop(),
-          })
-          .promise();
-        console.log("file deleted Successfully");
-      } catch (err) {
-        console.log("ERROR in file Deleting : " + JSON.stringify(err));
-      }
-
-    const stream = createReadStream();
-    const pathObj: any = await storeFS(stream, filename);
-
-    const options = {
-      density: 100,
-      saveFilename: "untitled",
-      savePath: "/tmp/tan_pdf",
-      format: "png",
-      width: 200,
-    };
-    const convert = fromPath(pathObj.path, options);
-
-    let imgs: WriteImageResponse[] = [];
-
-    if (convert.bulk) imgs = await convert.bulk(-1);
-
-    let thumbs = [];
-
-    for (const img of imgs) {
-      const { Location } = await s3
-        .upload({
-          // (C)
-          Bucket: BUCKET_NAME,
-          Body: fs.readFileSync(img.path),
-          Key: `${uuidv4()}${path.extname(filename)}`,
-        })
-        .promise();
-      console.log(Location);
-      thumbs.push(Location);
-    }
-    _pdf = Location;
-
-    await CatalogModel.findByIdAndUpdate(pages.catalogId, {
-      $set: {
-        pdf: _pdf,
-        thumbnails: thumbs,
-        status: CatalogStatus.PENDING,
-      },
-    });
-
-    return { result: true };
-  }
-
-  @Mutation(() => UploadRespType)
-  async updCatalogPdf2(
-    @Arg("pages", () => UpdPdfInput) pages: UpdPdfInput
-  ): Promise<UploadRespType> {
-    const s3 = new AWS.S3({
-      accessKeyId: ID,
-      secretAccessKey: SECRET,
-    });
-
-    let catalog = await CatalogModel.findById(pages.catalogId);
-    let _pdf = "";
-    let oldPdf = catalog.pdf;
-
-    if (!catalog) {
-      return { result: false };
-    }
-
-    const { createReadStream, filename, mimetype } = await pages?.pdf;
-
-    // const stream = createReadStream();
-    // const pathObj : any = await storeFS(stream, filename);
-
-    // var PDFImage = require("pdf-image").PDFImage;
-
-    // var pdfImage = new PDFImage(pathObj.path);
-    // try {
-    // const imagePaths = await pdfImage.convertFile();
-    //         console.log(imagePaths);
-
-    // } catch (err) {
-    //     console.log(err);
-    // }
-
-    // console.log(pathObj);
-
-    const { Location } = await s3
-      .upload({
-        // (C)
-        Bucket: BUCKET_NAME,
-        Body: createReadStream(),
-        Key: `${uuidv4()}${path.extname(filename)}`,
-        ContentType: mimetype,
-      })
-      .promise();
-
-    if (oldPdf)
-      try {
-        await s3
-          .deleteObject({
-            Bucket: BUCKET_NAME,
-            Key: oldPdf.split("/").pop(),
-          })
-          .promise();
-        console.log("file deleted Successfully");
-      } catch (err) {
-        console.log("ERROR in file Deleting : " + JSON.stringify(err));
-      }
-
-    console.log(Location);
-    _pdf = Location;
-
-    await CatalogModel.findByIdAndUpdate(pages.catalogId, {
-      $set: {
-        pdf: _pdf,
-        status: CatalogStatus.PENDING,
-      },
-    });
-
-    return { result: true };
-  }
-
-  @Mutation(() => Boolean)
-  async testPdf(): Promise<boolean> {
-    var PDFImage = require("pdf-image").PDFImage;
-    var pdfImage = new PDFImage(
-      "https://tanzeelat.s3.us-east-2.amazonaws.com/ab8a367c-0690-4140-bf4f-3030e2ce9dae.pdf"
-    );
-
-    const imgPaths = await pdfImage.convertFile();
-    console.log(imgPaths);
-    return true;
+    return result;
   }
 }
 const storeFS = (stream: any, filename: any) => {

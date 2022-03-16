@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { Resolver, Query, Arg, Mutation } from "type-graphql";
+import { Resolver, Query, Arg, Mutation, Ctx } from "type-graphql";
 import {
   ProductBulkInput,
   ProductBulkListInput,
@@ -10,14 +10,11 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import ProductModel, { Product } from "../models/Products";
 import { Types } from "mongoose";
+import { AZURE_CONTAINER } from "../constants/azure";
+import { azureUpload, deleteFile } from "../utils/azure";
+import { Context } from "@apollo/client";
 
 const path = require("path");
-
-const ID = "AKIAID3BSRIGM4OQ5J6A";
-const SECRET = "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";
-
-const BUCKET_NAME = "tanzeelat";
-const AWS = require("aws-sdk");
 
 @Resolver()
 export class ProductResolver {
@@ -159,28 +156,24 @@ export class ProductResolver {
   }
 
   @Mutation(() => Product)
-  async addProduct(@Arg("input") input: ProductInput): Promise<Product> {
-    const s3 = new AWS.S3({
-      accessKeyId: ID,
-      secretAccessKey: SECRET,
-    });
-
-    let image = "";
+  async addProduct(
+    @Arg("input") input: ProductInput,
+    @Ctx() ctx: Context
+  ): Promise<Product> {
+    let image: any = "";
 
     if (input.image) {
-      const { createReadStream, filename, mimetype } = await input.image;
+      const { createReadStream, filename } = await input?.image;
 
-      const { Location } = await s3
-        .upload({
-          // (C)
-          Bucket: BUCKET_NAME,
-          Body: createReadStream(),
-          Key: `${uuidv4()}${path.extname(filename)}`,
-          ContentType: mimetype,
-        })
-        .promise();
+      const fileStream = createReadStream();
+      let streamSize = parseInt(ctx.content_length);
 
-      console.log(Location);
+      const Location = await azureUpload(
+        `${uuidv4()}${path.extname(filename)}`,
+        fileStream,
+        streamSize,
+        AZURE_CONTAINER.PRODUCT
+      );
       image = Location;
     }
 
@@ -201,29 +194,23 @@ export class ProductResolver {
 
   @Mutation(() => Product)
   async addProductBulk(
-    @Arg("input") input: ProductBulkInput
+    @Arg("input") input: ProductBulkInput,
+    @Ctx() ctx: Context
   ): Promise<Product> {
-    const s3 = new AWS.S3({
-      accessKeyId: ID,
-      secretAccessKey: SECRET,
-    });
-
-    let image = "";
+    let image: any = "";
 
     if (input.image) {
-      const { createReadStream, filename, mimetype } = await input.image;
+      const { createReadStream, filename } = await input?.image;
 
-      const { Location } = await s3
-        .upload({
-          // (C)
-          Bucket: BUCKET_NAME,
-          Body: createReadStream(),
-          Key: `${uuidv4()}${path.extname(filename)}`,
-          ContentType: mimetype,
-        })
-        .promise();
+      const fileStream = createReadStream();
+      let streamSize = parseInt(ctx.content_length);
 
-      console.log(Location);
+      const Location = await azureUpload(
+        `${uuidv4()}${path.extname(filename)}`,
+        fileStream,
+        streamSize,
+        AZURE_CONTAINER.PRODUCT
+      );
       image = Location;
     }
 
@@ -248,23 +235,7 @@ export class ProductResolver {
   async delProduct(@Arg("id") id: string): Promise<Boolean> {
     const product = await ProductModel.findById(id);
 
-    const s3 = new AWS.S3({
-      accessKeyId: ID,
-      secretAccessKey: SECRET,
-    });
-
-    if (product.image)
-      try {
-        await s3
-          .deleteObject({
-            Bucket: BUCKET_NAME,
-            Key: product.image.split("/").pop(),
-          })
-          .promise();
-        console.log("file deleted Successfully");
-      } catch (err) {
-        console.log("ERROR in file Deleting : " + JSON.stringify(err));
-      }
+    if (product.image) deleteFile(AZURE_CONTAINER.PRODUCT, product.image);
 
     await ProductModel.findByIdAndDelete(id);
     return true;
