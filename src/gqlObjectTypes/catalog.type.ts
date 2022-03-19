@@ -21,8 +21,8 @@ export class CatalogInput {
   @Field()
   expiry: string;
 
-  @Field()
-  catalogCategoryId: string;
+  @Field(() => [String])
+  catalogCategoryId: string[];
 
   @Field(() => [String])
   outlets: string[];
@@ -62,8 +62,8 @@ export class CatalogOutput {
   @Field(() => Vendor, { nullable: true })
   vendor: Vendor;
 
-  @Field()
-  catalogCategoryId: string;
+  @Field(() => [String])
+  catalogCategoryId: string[];
 
   @Field(() => [VendorOutlet])
   outlets: VendorOutlet[];
