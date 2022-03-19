@@ -124,7 +124,9 @@ export class CatalogResolver {
             .map((el) => new Types.ObjectId(el)) || [],
       };
     if (filter?.category)
-      filters.catalogCategoryId = new Types.ObjectId(filter.category);
+      filters.catalogCategoryId = {
+        $in: [new Types.ObjectId(filter.category)],
+      };
     if (filter?.search)
       filters["$or"] = [
         { title: { $regex: filter.search, $options: "i" } },
@@ -318,8 +320,6 @@ export class CatalogResolver {
     );
 
     const today = new Date();
-
-    console.log(_bookmarks);
 
     const catalogs = await CatalogModel.aggregate([
       {
@@ -584,11 +584,6 @@ export class CatalogResolver {
         },
       },
       {
-        $unwind: {
-          path: "$catalogCategoryDt",
-        },
-      },
-      {
         $lookup: {
           from: "vendors",
           localField: "vendorId",
@@ -678,9 +673,9 @@ export class CatalogResolver {
     const options = {
       density: 100,
       saveFilename: "untitled",
-      // savePath: "/Users/ncod/Documents/tmp",
+      savePath: "/Users/ncod/Documents/tmp",
       // savePath: "/tmp/tan_pdf",  //for aws
-      savePath: "/home/azureuser/tmp",
+      // savePath: "/home/azureuser/tmp", //for azure
       format: "png",
       width: 200,
       height: 270,

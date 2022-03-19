@@ -40,16 +40,16 @@ export class Catalog {
   status: string;
 
   @prop()
-  @Field()
-  catalogCategoryId: string;
+  @Field(() => [String])
+  catalogCategoryId: string[];
 
   @prop()
   @Field(() => [VendorOutlet])
   outlets: VendorOutlet[];
 
   @prop()
-  @Field(() => CatalogCategories, { nullable: true })
-  catalogCategoryDt?: CatalogCategories;
+  @Field(() => [CatalogCategories], { nullable: true })
+  catalogCategoryDt?: CatalogCategories[];
 
   @prop()
   @Field(() => Vendor, { nullable: true })
@@ -79,10 +79,12 @@ const catalogSchema = new Schema({
   expiry: Date,
   status: { type: String, default: CatalogStatus.PENDING },
   vendorId: { type: Mongoose.Types.ObjectId, ref: "Vendor" },
-  catalogCategoryId: {
-    type: Mongoose.Types.ObjectId,
-    ref: "CatalogCategories",
-  },
+  catalogCategoryId: [
+    {
+      type: Mongoose.Types.ObjectId,
+      ref: "CatalogCategories",
+    },
+  ],
   outlets: [{ type: Mongoose.Types.ObjectId, ref: "VendorOutlet" }],
   pages: [String],
   pdf: String,
