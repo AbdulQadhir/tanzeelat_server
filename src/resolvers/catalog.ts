@@ -31,6 +31,7 @@ export class CatalogResolver {
     @Arg("vendorId") vendorId: string,
     @Ctx() ctx: Context
   ): Promise<Catalog[]> {
+    const today = new Date();
     if (ctx.userType == "VENDOR") {
       const vendorUser = await VendorUserModel.findById(ctx.userId);
       const catalogs = await CatalogModel.aggregate([
@@ -44,6 +45,36 @@ export class CatalogResolver {
             },
           },
         },
+        {
+          $lookup: {
+            from: "catalogpriorities",
+            localField: "_id",
+            foreignField: "catalogId",
+            as: "rank",
+          },
+        },
+        {
+          $unwind: {
+            path: "$rank",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $sort: {
+            _id: -1,
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            id: "$_id",
+            title: 1,
+            status: 1,
+            enabled: 1,
+            expired: { $gte: [today, "$expiry"] },
+            rank: "$rank.rank",
+          },
+        },
       ]);
       return catalogs;
     } else {
@@ -51,7 +82,46 @@ export class CatalogResolver {
       if (!access) {
       } //    throw new Error("Unauthorized!");x
 
-      return await CatalogModel.find({ vendorId });
+      const catalogs = await CatalogModel.aggregate([
+        {
+          $match: {
+            vendorId: new Types.ObjectId(vendorId),
+          },
+        },
+        {
+          $lookup: {
+            from: "catalogpriorities",
+            localField: "_id",
+            foreignField: "catalogId",
+            as: "rank",
+          },
+        },
+        {
+          $unwind: {
+            path: "$rank",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            id: "$_id",
+            title: 1,
+            status: 1,
+            enabled: 1,
+            expired: { $gte: [today, "$expiry"] },
+            rank: "$rank.rank",
+          },
+        },
+        {
+          $sort: {
+            expired: 1,
+            enabled: -1,
+            _id: -1,
+          },
+        },
+      ]);
+      return catalogs;
     }
   }
 
@@ -147,6 +217,20 @@ export class CatalogResolver {
         },
       },
       {
+        $lookup: {
+          from: "catalogpriorities",
+          localField: "_id",
+          foreignField: "catalogId",
+          as: "rank",
+        },
+      },
+      {
+        $unwind: {
+          path: "$rank",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
         $project: {
           vendorId: 1,
           title: 1,
@@ -161,6 +245,7 @@ export class CatalogResolver {
           startDate: 1,
           status: 1,
           pdf: 1,
+          rank: { $ifNull: ["$rank.rank", 99] },
           endDate: {
             $add: [
               {
@@ -223,6 +308,7 @@ export class CatalogResolver {
       {
         $sort: {
           "vendor.grade": 1,
+          rank: -1,
         },
       },
       {

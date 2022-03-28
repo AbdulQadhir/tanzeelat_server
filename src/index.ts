@@ -28,6 +28,7 @@ import { HelpResolver } from "./resolvers/help";
 import { LogResolver } from "./resolvers/logs";
 import { NotificationResolver } from "./resolvers/notification";
 import { AnalyticsResolver } from "./resolvers/analytics";
+import { CatalogPriorityResolver } from "./resolvers/catalogPriority";
 
 const fs = require("fs");
 const jwt = require("jsonwebtoken");
@@ -65,6 +66,7 @@ const startServer = async () => {
         LogResolver,
         NotificationResolver,
         AnalyticsResolver,
+        CatalogPriorityResolver,
       ],
     }),
     uploads: false,
