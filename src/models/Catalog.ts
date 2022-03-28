@@ -70,27 +70,38 @@ export class Catalog {
   @prop()
   @Field(() => Boolean, { nullable: true })
   enabled: Boolean;
+
+  @prop()
+  @Field(() => Boolean, { nullable: true })
+  expired: Boolean;
+
+  @prop()
+  @Field(() => Number, { nullable: true })
+  rank: Number;
 }
 
-const catalogSchema = new Schema({
-  title: String,
-  titlear: String,
-  startDate: Date,
-  expiry: Date,
-  status: { type: String, default: CatalogStatus.PENDING },
-  vendorId: { type: Mongoose.Types.ObjectId, ref: "Vendor" },
-  catalogCategoryId: [
-    {
-      type: Mongoose.Types.ObjectId,
-      ref: "CatalogCategories",
-    },
-  ],
-  outlets: [{ type: Mongoose.Types.ObjectId, ref: "VendorOutlet" }],
-  pages: [String],
-  pdf: String,
-  thumbnails: [String],
-  enabled: { type: Boolean, default: true },
-});
+const catalogSchema = new Schema(
+  {
+    title: String,
+    titlear: String,
+    startDate: Date,
+    expiry: Date,
+    status: { type: String, default: CatalogStatus.PENDING },
+    vendorId: { type: Mongoose.Types.ObjectId, ref: "Vendor" },
+    catalogCategoryId: [
+      {
+        type: Mongoose.Types.ObjectId,
+        ref: "CatalogCategories",
+      },
+    ],
+    outlets: [{ type: Mongoose.Types.ObjectId, ref: "VendorOutlet" }],
+    pages: [String],
+    pdf: String,
+    thumbnails: [String],
+    enabled: { type: Boolean, default: true },
+  },
+  { timestamps: true }
+);
 
 const CatalogModel: Model<any> = Mongoose.model("Catalog", catalogSchema);
 
