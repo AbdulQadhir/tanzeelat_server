@@ -207,6 +207,187 @@ export class CatalogResolver {
     if (filter?.state) filters["outlet.state"] = filter.state;
 
     const today = new Date();
+    var yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+
+    const last4 = await CatalogModel.aggregate([
+      {
+        $match: {
+          status: "ACCEPTED",
+          createdAt: { $gte: yesterday },
+          enabled: true,
+        },
+      },
+      {
+        $sort: {
+          createdAt: -1,
+        },
+      },
+      {
+        $limit: 4,
+      },
+      {
+        $project: {
+          title: 1,
+          createdAt: 1,
+        },
+      },
+    ]);
+
+    const _last4 = last4.map((el) => el._id);
+    const _last41 = last4.map((el) => el.title);
+
+    console.log(_last41);
+
+    const last4Catalogs = await CatalogModel.aggregate([
+      {
+        $match: {
+          _id: { $in: _last4 },
+        },
+      },
+      {
+        $lookup: {
+          from: "catalogpriorities",
+          localField: "_id",
+          foreignField: "catalogId",
+          as: "rank",
+        },
+      },
+      {
+        $unwind: {
+          path: "$rank",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          vendorId: 1,
+          title: 1,
+          titlear: 1,
+          outlets: 1,
+          pages: 1,
+          thumbnails: 1,
+          outletCopy: "$outlets",
+          catalogCategoryId: 1,
+          catalogId: "$_id",
+          expiry: 1,
+          startDate: 1,
+          status: 1,
+          pdf: 1,
+          rank: { $ifNull: ["$rank.rank", 99] },
+          endDate: {
+            $add: [
+              {
+                $dateFromString: {
+                  dateString: {
+                    $dateToString: { format: "%Y-%m-%d", date: "$expiry" },
+                  },
+                },
+              },
+              1 * 24 * 60 * 60000,
+            ],
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: "vendoroutlets",
+          localField: "outlets",
+          foreignField: "_id",
+          as: "outlets",
+        },
+      },
+      {
+        $lookup: {
+          from: "vendors",
+          localField: "vendorId",
+          foreignField: "_id",
+          as: "vendor",
+        },
+      },
+      {
+        $unwind: {
+          path: "$vendor",
+        },
+      },
+      {
+        $unwind: {
+          path: "$outletCopy",
+        },
+      },
+      {
+        $lookup: {
+          from: "vendoroutlets",
+          localField: "outletCopy",
+          foreignField: "_id",
+          as: "outlet",
+        },
+      },
+      {
+        $unwind: {
+          path: "$outlet",
+        },
+      },
+      {
+        $sort: {
+          "vendor.grade": 1,
+          rank: -1,
+        },
+      },
+      {
+        $match: {
+          "vendor.active": true,
+          ...filters,
+        },
+      },
+      {
+        $group: {
+          _id: {
+            state: "$outlet.state",
+            catalogId: "$catalogId",
+          },
+          catalogId: { $first: "$catalogId" },
+          state: { $first: "$outlet.state" },
+          catalogs: {
+            $first: {
+              _id: "$catalogId",
+              id: "$catalogId",
+              catalogCategoryId: "$catalogCategoryId",
+              title: "$title",
+              titlear: "$titlear",
+              outletName: "$outlet.name",
+              outlet: {
+                name: "$outlet.name",
+                namear: "$outlet.namear",
+                state: "$outlet.state",
+                place: "$outlet.place",
+              },
+              vendor: {
+                _id: "$vendor._id",
+                logo: "$vendor.logo",
+                shopname: "$vendor.shopname",
+              },
+              pages: "$pages",
+              thumbnails: "$thumbnails",
+              outlets: "$outlets",
+              expiry: "$expiry",
+              pdf: "$pdf",
+            },
+          },
+        },
+      },
+      {
+        $group: {
+          _id: "$state",
+          state: {
+            $first: "$state",
+          },
+          catalogs: {
+            $push: "$catalogs",
+          },
+        },
+      },
+    ]);
 
     const catalogs = await CatalogModel.aggregate([
       {
@@ -214,6 +395,7 @@ export class CatalogResolver {
           status: "ACCEPTED",
           startDate: { $lte: today },
           enabled: true,
+          _id: { $nin: _last4 },
         },
       },
       {
@@ -370,6 +552,12 @@ export class CatalogResolver {
       return x.state == state ? -1 : y.state == state ? 1 : 0;
     });
 
+    catalogs.forEach((el, index) => {
+      const cats =
+        last4Catalogs.find((e) => e.state == el.state)?.catalogs || [];
+      catalogs[index].catalogs = [...cats, ...el.catalogs];
+    });
+
     return catalogs;
   }
 
@@ -523,6 +711,7 @@ export class CatalogResolver {
       },
       {
         $match: {
+          "catalogs.enabled": true,
           "catalogs.status": "ACCEPTED",
           "catalogs.startDate": { $lte: today },
           "catalogs.expiry": { $gte: today },
