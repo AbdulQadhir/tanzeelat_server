@@ -69,10 +69,12 @@ export class CouponResolver {
     //     : sortByDate
     //   : sortByDate;
 
+    // [11.0422869, 75.9925838]
+
     const filterDistance: any = filter.coordinates
       ? {
           $geoNear: {
-            near: { type: "Point", coordinates: [11.0422869, 75.9925838] },
+            near: { type: "Point", coordinates: filter.coordinates },
             distanceField: "distance",
             spherical: true,
           },

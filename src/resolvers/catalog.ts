@@ -680,7 +680,7 @@ export class CatalogResolver {
       parseFloat(coords.split(",")[0] || "") || 0,
       parseFloat(coords.split(",")[1] || "") || 0,
     ];
-    //  console.log(_coords);
+    console.log(_coords);
 
     const today = new Date();
     // const yesterday = new Date().setDate(new Date().getDate()-1)
@@ -773,7 +773,7 @@ export class CatalogResolver {
       },
       {
         $group: {
-          _id: "$id",
+          _id: "$vendor._id",
           id: { $first: "$id" },
           title: {
             $first: "$title",
