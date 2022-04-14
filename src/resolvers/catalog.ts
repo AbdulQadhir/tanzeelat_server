@@ -235,9 +235,6 @@ export class CatalogResolver {
     ]);
 
     const _last4 = last4.map((el) => el._id);
-    const _last41 = last4.map((el) => el.title);
-
-    console.log(_last41);
 
     const last4Catalogs = await CatalogModel.aggregate([
       {
@@ -287,6 +284,11 @@ export class CatalogResolver {
               1 * 24 * 60 * 60000,
             ],
           },
+        },
+      },
+      {
+        $match: {
+          endDate: { $gte: today },
         },
       },
       {
