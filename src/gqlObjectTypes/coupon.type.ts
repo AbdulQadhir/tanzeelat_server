@@ -64,6 +64,12 @@ export class CouponFilterInput {
   @Field({ nullable: true })
   id?: string;
 
+  @Field(() => [String], { nullable: true })
+  vendorList?: [string];
+
+  @Field(() => [String], { nullable: true })
+  categoryList?: [string];
+
   @Field({ nullable: true })
   state?: string;
 

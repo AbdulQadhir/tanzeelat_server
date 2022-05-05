@@ -197,6 +197,14 @@ export class CatalogResolver {
       filters.catalogCategoryId = {
         $in: [new Types.ObjectId(filter.category)],
       };
+
+    if (filter?.categoryList)
+      filters.catalogCategoryId = {
+        $in:
+          filter.categoryList
+            ?.filter((el) => el != "")
+            .map((el) => new Types.ObjectId(el)) || [],
+      };
     if (filter?.search)
       filters["$or"] = [
         { title: { $regex: filter.search, $options: "i" } },

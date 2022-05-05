@@ -6,6 +6,7 @@ import {
   ProductFilters,
   ProductInput,
   ProductListResponse,
+  ProductsByCategoryOutput,
 } from "../gqlObjectTypes/product.type";
 import { v4 as uuidv4 } from "uuid";
 import ProductModel, { Product } from "../models/Products";
@@ -75,6 +76,119 @@ export class ProductResolver {
         },
       },
     ]);
+    return products;
+  }
+
+  @Query(() => [ProductsByCategoryOutput])
+  async allProductsByCategory(
+    @Arg("filter") filter: ProductFilters
+  ): Promise<ProductsByCategoryOutput[]> {
+    const today = new Date();
+
+    const filterVendorList = filter.vendorList
+      ? {
+          vendorId: {
+            $in:
+              filter.vendorList
+                ?.filter((el) => el != "")
+                .map((el) => new Types.ObjectId(el)) || [],
+          },
+        }
+      : {};
+
+    const filterCategoryList = filter.categoryList
+      ? {
+          productCategoryId: {
+            $in:
+              filter.categoryList
+                ?.filter((el) => el != "")
+                .map((el) => new Types.ObjectId(el)) || [],
+          },
+        }
+      : {};
+
+    const products = await ProductModel.aggregate([
+      {
+        $match: {
+          ...filterVendorList,
+          ...filterCategoryList,
+        },
+      },
+      {
+        $lookup: {
+          from: "vendors",
+          localField: "vendorId",
+          foreignField: "_id",
+          as: "vendor",
+        },
+      },
+      {
+        $unwind: {
+          path: "$vendor",
+        },
+      },
+      {
+        $lookup: {
+          from: "productcategories",
+          localField: "productCategoryId",
+          foreignField: "_id",
+          as: "productCategory",
+        },
+      },
+      {
+        $unwind: {
+          path: "$productCategory",
+        },
+      },
+      {
+        $lookup: {
+          from: "catalogs",
+          localField: "catalogId",
+          foreignField: "_id",
+          as: "catalog",
+        },
+      },
+      {
+        $unwind: {
+          path: "$catalog",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $match: {
+          $or: [
+            { name: { $regex: filter.search || "", $options: "i" } },
+            {
+              "vendor.shopname": { $regex: filter.search || "", $options: "i" },
+            },
+          ],
+          "catalog.expiry": { $gte: today },
+        },
+      },
+      {
+        $group: {
+          _id: "$productCategoryId",
+          productCategory: {
+            $first: "$productCategory.name",
+          },
+          products: {
+            $push: {
+              name: "$name",
+              namear: "$namear",
+              price: "$price",
+              offerPrice: "$offerPrice",
+              image: "$image",
+              vendor: {
+                _id: "$vendor._id",
+                shopname: "$vendor.shopname",
+                logo: "$vendor.logo",
+              },
+            },
+          },
+        },
+      },
+    ]);
+
     return products;
   }
 
