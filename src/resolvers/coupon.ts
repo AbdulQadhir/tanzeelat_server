@@ -28,7 +28,6 @@ export class CouponResolver {
   ): Promise<CouponFilterOutput[]> {
     // const userId = ctx.userId || "";
 
-    console.log(filter);
     const today = new Date();
 
     const filterState =
@@ -54,6 +53,28 @@ export class CouponResolver {
             ],
           }
         : {};
+
+    const filterVendorList = filter.vendorList
+      ? {
+          "vendor._id": {
+            $in:
+              filter.vendorList
+                ?.filter((el) => el != "")
+                .map((el) => new Types.ObjectId(el)) || [],
+          },
+        }
+      : {};
+
+    const filterCouponList = filter.categoryList
+      ? {
+          "coupon.couponCategoryId": {
+            $in:
+              filter.categoryList
+                ?.filter((el) => el != "")
+                .map((el) => new Types.ObjectId(el)) || [],
+          },
+        }
+      : {};
 
     // const sortByDate = { "coupon.startDate": 1 };
     // const sortByDistance = { distance: 1 };
@@ -104,11 +125,15 @@ export class CouponResolver {
       {
         $match: {
           ...filterCategory,
+          ...filterCouponList,
         },
       },
       {
         $group: {
           _id: "$coupon._id",
+          outletId: {
+            $first: "$_id",
+          },
           outletName: {
             $first: "$name",
           },
@@ -149,11 +174,18 @@ export class CouponResolver {
         },
       },
       {
+        $match: {
+          ...filterSearch,
+          ...filterVendorList,
+        },
+      },
+      {
         $project: {
           distance: 1,
           "vendor._id": "$vendor._id",
           "vendor.shopname": "$vendor.shopname",
           "vendor.logo": "$vendor.logo",
+          "outlet._id": "$outletId",
           "outlet.name": "$outletName",
           "outlet.state": "$state",
           "outlet.workingHours": "$workingHours",
@@ -295,6 +327,43 @@ export class CouponResolver {
     ]);
 
     return coupons;
+  }
+
+  @Query(() => [String])
+  async allCouponList(): Promise<String[]> {
+    const today = new Date();
+
+    const coupons = await CouponModel.aggregate([
+      {
+        $addFields: {
+          endDate1: {
+            $add: [
+              {
+                $dateFromString: {
+                  dateString: {
+                    $dateToString: { format: "%Y-%m-%d", date: "$endDate" },
+                  },
+                },
+              },
+              1 * 24 * 60 * 60000,
+            ],
+          },
+        },
+      },
+      {
+        $match: {
+          outlets: { $not: { $size: 0 } },
+          endDate1: { $gt: today },
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+        },
+      },
+    ]);
+
+    return coupons.map((el) => el._id);
   }
 
   @Query(() => [Coupon])

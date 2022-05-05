@@ -151,6 +151,9 @@ export class CatalogFilters {
 
   @Field({ nullable: true })
   state?: string;
+
+  @Field(() => [String], { nullable: true })
+  categoryList?: [string];
 }
 
 export interface Upload {
