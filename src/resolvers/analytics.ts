@@ -7,7 +7,7 @@ import {
 } from "../gqlObjectTypes/analytics.types";
 import { Resolver, Query, Arg } from "type-graphql";
 
-const propertyId = "300168872";
+const propertyId = "306446649"; // Old: "300168872";
 const { BetaAnalyticsDataClient } = require("@google-analytics/data");
 const analyticsDataClient = new BetaAnalyticsDataClient();
 
