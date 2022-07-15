@@ -3,6 +3,7 @@ import { Field, ID, ObjectType } from "type-graphql";
 import Mongoose, { Model, Schema } from "mongoose";
 import { VendorOutlet } from "./VendorOutlet";
 import { Vendor } from "./Vendor";
+import { RedeemType, StoreType } from "../enums/coupon.enum";
 
 @ObjectType({ description: "The Coupon model" })
 export class Coupon {
@@ -96,6 +97,34 @@ export class Coupon {
   @prop()
   @Field({ nullable: true })
   code: string;
+
+  @prop()
+  @Field({ nullable: true })
+  customDtTitle: String;
+
+  @prop()
+  @Field({ nullable: true })
+  customDtDescription: String;
+
+  @prop()
+  @Field({ nullable: true })
+  customDtTitleAr: String;
+
+  @prop()
+  @Field({ nullable: true })
+  customDtDescriptionAr: String;
+
+  @prop()
+  @Field({ nullable: true })
+  url: String;
+
+  @prop()
+  @Field({ nullable: true })
+  storeType: StoreType;
+
+  @prop()
+  @Field({ nullable: true })
+  redeemType: RedeemType;
 }
 
 const couponSchema = new Schema({
@@ -119,7 +148,16 @@ const couponSchema = new Schema({
   thumbnailAr: String,
   redeemLimit: Number,
   featured: Number,
+  limitType: String,
+
   code: String,
+  customDtTitle: String,
+  customDtDescription: String,
+  customDtTitleAr: String,
+  customDtDescriptionAr: String,
+  url: String,
+  storeType: String,
+  redeemType: String,
 });
 
 const CouponModel: Model<any> = Mongoose.model("Coupon", couponSchema);
