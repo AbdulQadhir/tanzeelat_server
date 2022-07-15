@@ -95,7 +95,7 @@ export class CouponResolver {
     const filterDistance: any = filter.coordinates
       ? {
           $geoNear: {
-            near: { type: "Point", coordinates: filter.coordinates },
+            near: { type: "Point", coordinates: [11.0422869, 75.9925838] },
             distanceField: "distance",
             spherical: true,
           },
@@ -197,6 +197,13 @@ export class CouponResolver {
           "coupon.thumbnail": "$coupon.thumbnail",
           "coupon.thumbnailAr": "$coupon.thumbnailAr",
           "coupon.featured": "$coupon.featured",
+          "coupon.code": "$coupon.code",
+          "coupon.customDtTitle": "$coupon.customDtTitle",
+          "coupon.customDtDescription": "$coupon.customDtDescription",
+          "coupon.customDtTitleAr": "$coupon.customDtTitleAr",
+          "coupon.customDtDescriptionAr": "$coupon.customDtDescriptionAr",
+          "coupon.redeemType": "$coupon.redeemType",
+          "coupon.storeType": "$coupon.storeType",
           endDate: {
             $add: [
               {

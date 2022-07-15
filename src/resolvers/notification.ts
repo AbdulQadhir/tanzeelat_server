@@ -57,8 +57,8 @@ export class NotificationResolver {
     }
 
     const client = new OneSignal.Client(
-      "8010025e-cf62-4172-a3d1-5753bdb00d58",
-      "Mzg1MzQ4NTEtZjkzYi00ZTQ1LWJjNzgtYWE2ZWEyZDhlNGY0"
+      "024cf334-7e0e-441e-af26-42c99dba3a81", //"8010025e-cf62-4172-a3d1-5753bdb00d58",
+      "NDNjNjcwMWEtMDNhOS00OGUyLTk4MWEtNDExMWY0ZTE1OWY0" //Mzg1MzQ4NTEtZjkzYi00ZTQ1LWJjNzgtYWE2ZWEyZDhlNGY0"
     );
     const notification = {
       headings: {
@@ -76,7 +76,7 @@ export class NotificationResolver {
         type: "general",
       },
       included_segments: ["Active Users"],
-      // include_player_ids: ["6020994a-b4bd-460b-8994-b5d0de76e494"]
+      // include_player_ids: ["91d53917-60c5-44aa-a169-1c685401ded2"],
     };
 
     try {
