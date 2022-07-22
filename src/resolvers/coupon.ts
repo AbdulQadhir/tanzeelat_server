@@ -16,6 +16,7 @@ import computeDistance from "../utils/Geo";
 import VendorUserModel from "../models/VendorUser";
 import { AZURE_CONTAINER } from "../constants/azure";
 import { azureUpload, deleteFile } from "../utils/azure";
+import { RedeemType, StoreType } from "../enums/coupon.enum";
 
 const path = require("path");
 
@@ -44,6 +45,13 @@ export class CouponResolver {
           }
         : {};
 
+    const filterCategory2 =
+      filter.id != "0"
+        ? {
+            couponCategoryId: new Types.ObjectId(filter.id),
+          }
+        : {};
+
     const filterSearch =
       filter.search != ""
         ? {
@@ -68,6 +76,17 @@ export class CouponResolver {
     const filterCouponList = filter.categoryList
       ? {
           "coupon.couponCategoryId": {
+            $in:
+              filter.categoryList
+                ?.filter((el) => el != "")
+                .map((el) => new Types.ObjectId(el)) || [],
+          },
+        }
+      : {};
+
+    const filterCouponList2 = filter.categoryList
+      ? {
+          couponCategoryId: {
             $in:
               filter.categoryList
                 ?.filter((el) => el != "")
@@ -126,6 +145,7 @@ export class CouponResolver {
         $match: {
           ...filterCategory,
           ...filterCouponList,
+          "coupon.storeType": StoreType.InStore,
         },
       },
       {
@@ -235,9 +255,93 @@ export class CouponResolver {
     ];
     if (filter.coordinates) aggregation = [filterDistance, ...aggregation];
 
-    const coupons = await VendorOutletModel.aggregate(aggregation);
+    const coupons = filter.storeTypes?.includes(StoreType.InStore)
+      ? await VendorOutletModel.aggregate(aggregation)
+      : [];
 
-    return coupons;
+    let aggregationOnline = [
+      {
+        $match: {
+          ...filterCategory2,
+          ...filterCouponList2,
+          storeType: StoreType.Online,
+        },
+      },
+      {
+        $lookup: {
+          from: "vendors",
+          localField: "vendorId",
+          foreignField: "_id",
+          as: "vendor",
+        },
+      },
+      {
+        $unwind: {
+          path: "$vendor",
+        },
+      },
+      {
+        $match: {
+          ...filterSearch,
+          ...filterVendorList,
+        },
+      },
+      {
+        $project: {
+          _id: "$_id",
+          "vendor._id": "$vendor._id",
+          "vendor.shopname": "$vendor.shopname",
+          "vendor.logo": "$vendor.logo",
+          "coupon.name": "$name",
+          "coupon.redeemLimit": "$redeemLimit",
+          "coupon.description": "$description",
+          "coupon.endDate": "$endDate",
+          "coupon.startDate": "$startDate",
+          "coupon.thumbnail": "$thumbnail",
+          "coupon.thumbnailAr": "$thumbnailAr",
+          "coupon.featured": "$featured",
+          "coupon.code": "$code",
+          "coupon.customDtTitle": "$customDtTitle",
+          "coupon.customDtDescription": "$customDtDescription",
+          "coupon.customDtTitleAr": "$customDtTitleAr",
+          "coupon.customDtDescriptionAr": "$customDtDescriptionAr",
+          "coupon.redeemType": "$redeemType",
+          "coupon.storeType": "$storeType",
+          endDate: {
+            $add: [
+              {
+                $dateFromString: {
+                  dateString: {
+                    $dateToString: {
+                      format: "%Y-%m-%d",
+                      date: "$endDate",
+                    },
+                  },
+                },
+              },
+              1 * 24 * 60 * 60000,
+            ],
+          },
+        },
+      },
+      {
+        $match: {
+          ...filterSearch,
+          endDate: { $gte: today },
+        },
+      },
+      // {
+      //   $sortBy: {
+      //     ...sortBy
+      //   }
+      // },
+    ];
+
+    const couponOnline = filter.storeTypes?.includes(StoreType.Online)
+      ? await CouponModel.aggregate(aggregationOnline)
+      : [];
+
+    return [...coupons, ...couponOnline];
   }
 
   @Query(() => [Coupon])
@@ -272,6 +376,7 @@ export class CouponResolver {
         $match: {
           vendorId: new Types.ObjectId(vendorId),
           _id: { $ne: new Types.ObjectId(couponId) },
+          storeType: coupon.storeType,
           outlets: { $not: { $size: 0 } },
           endDate1: { $gt: today },
         },
@@ -547,13 +652,16 @@ export class CouponResolver {
 
       thumbnailAr = Location;
     }
-    const code = Math.floor(100000 + Math.random() * 900000);
+    const code = input.code || Math.floor(100000 + Math.random() * 900000);
+    const redeemType =
+      input.redeemLimit == 0 ? RedeemType.Open : RedeemType.Closed;
     const coupon = new CouponModel({
       ...input,
       menu,
       thumbnail,
       thumbnailAr,
       code,
+      redeemType,
     });
     const result = await coupon.save();
     return result;
