@@ -57,6 +57,27 @@ export class CouponInput {
 
   @Field(() => Number, { nullable: true })
   featured: Number;
+
+  @Field({ nullable: true })
+  code: string;
+
+  @Field({ nullable: true })
+  customDtTitle: string;
+
+  @Field({ nullable: true })
+  customDtDescription: string;
+
+  @Field({ nullable: true })
+  customDtTitleAr: string;
+
+  @Field({ nullable: true })
+  customDtDescriptionAr: string;
+
+  @Field({ nullable: true })
+  url: string;
+
+  @Field({ nullable: true })
+  storeType: string;
 }
 
 @InputType({ description: "Coupon filter" })
@@ -81,6 +102,9 @@ export class CouponFilterInput {
 
   @Field({ nullable: true })
   sortBy?: string;
+
+  @Field(() => [String], { nullable: true })
+  storeTypes?: [string];
 }
 
 @ObjectType()
@@ -154,7 +178,7 @@ export class CouponSummary {
 
 @ObjectType()
 export class CouponFilterOutput {
-  @Field()
+  @Field({ nullable: true })
   _id?: string;
 
   @Field(() => Number, { nullable: true })
