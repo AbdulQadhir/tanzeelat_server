@@ -1,12 +1,11 @@
 import { prop } from "@typegoose/typegoose";
 import { Field, ID, ObjectType } from "type-graphql";
-import Mongoose, { Model, Schema  } from "mongoose"
+import Mongoose, { Model, Schema } from "mongoose";
 import { Vendor } from "./Vendor";
 import { ProductCategories } from "./ProductCategories";
 
 @ObjectType({ description: "The Product model" })
 export class Product {
-  
   @prop()
   @Field(() => ID)
   id: string;
@@ -15,7 +14,7 @@ export class Product {
   _id: string;
 
   @prop()
-  @Field({nullable: true})
+  @Field({ nullable: true })
   name: string;
 
   @prop()
@@ -23,11 +22,11 @@ export class Product {
   namear?: string;
 
   @prop()
-  @Field({nullable: true})
+  @Field({ nullable: true })
   price?: number;
 
   @prop()
-  @Field({nullable: true})
+  @Field({ nullable: true })
   offerPrice?: number;
 
   @prop()
@@ -39,27 +38,27 @@ export class Product {
   productCategoryId: string;
 
   @prop()
-  @Field()
-  productSubCategoryId: string;
+  @Field({ nullable: true })
+  productSubCategoryId?: string;
 
   @prop()
-  @Field({nullable: true})
+  @Field({ nullable: true })
   image: string;
 
   @prop()
-  @Field(()=>Vendor,{nullable: true})
+  @Field(() => Vendor, { nullable: true })
   vendor?: Vendor;
 
   @prop()
-  @Field(()=>ProductCategories,{nullable: true})
+  @Field(() => ProductCategories, { nullable: true })
   productCategory: ProductCategories;
 
   @prop()
-  @Field({nullable: true})
+  @Field({ nullable: true })
   catalogId?: string;
 
   @prop()
-  @Field({nullable: true})
+  @Field({ nullable: true })
   pageNo?: number;
 }
 
@@ -70,13 +69,19 @@ const productSchema = new Schema({
   offerPrice: Number,
   expiry: Date,
   vendorId: { type: Mongoose.Types.ObjectId, ref: "Vendor" },
-  productCategoryId: { type: Mongoose.Types.ObjectId, ref: "ProductCategories" },
-  productSubCategoryId: { type: Mongoose.Types.ObjectId, ref: "ProductSubCategories" },
+  productCategoryId: {
+    type: Mongoose.Types.ObjectId,
+    ref: "ProductCategories",
+  },
+  productSubCategoryId: {
+    type: Mongoose.Types.ObjectId,
+    ref: "ProductSubCategories",
+  },
   image: String,
   catalogId: { type: Mongoose.Types.ObjectId, ref: "Catalog" },
   pageNo: Number,
 });
 
-const ProductModel : Model<any> = Mongoose.model('Product', productSchema);
+const ProductModel: Model<any> = Mongoose.model("Product", productSchema);
 
 export default ProductModel;
