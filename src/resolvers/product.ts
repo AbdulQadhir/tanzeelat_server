@@ -21,7 +21,6 @@ const path = require("path");
 export class ProductResolver {
   @Query(() => [Product])
   async allProducts(@Arg("filter") filter: ProductFilters): Promise<Product[]> {
-    console.log(filter);
     const today = new Date();
 
     const filterCategory =
@@ -65,6 +64,11 @@ export class ProductResolver {
         },
       },
       {
+        $addFields: {
+          "catalog.expiry": { $ifNull: ["$catalog.expiry", today] },
+        },
+      },
+      {
         $match: {
           $or: [
             { name: { $regex: filter.search || "", $options: "i" } },
@@ -73,6 +77,11 @@ export class ProductResolver {
             },
           ],
           "catalog.expiry": { $gte: today },
+        },
+      },
+      {
+        $sort: {
+          _id: -1,
         },
       },
     ]);
