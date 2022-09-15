@@ -125,6 +125,18 @@ export class Coupon {
   @prop()
   @Field({ nullable: true })
   redeemType: RedeemType;
+
+  @prop()
+  @Field(() => Number, { nullable: true })
+  perUserLimit: Number;
+
+  @prop()
+  @Field(() => Number, { nullable: true })
+  userRedeemed: Number;
+
+  @prop()
+  @Field(() => Number, { nullable: true })
+  totalRedeemed: Number;
 }
 
 const couponSchema = new Schema({
@@ -149,6 +161,7 @@ const couponSchema = new Schema({
   redeemLimit: Number,
   featured: Number,
   limitType: String,
+  perUserLimit: Number,
 
   code: String,
   customDtTitle: String,

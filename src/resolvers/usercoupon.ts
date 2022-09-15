@@ -12,6 +12,7 @@ import { Context } from "vm";
 import VendorUserModel from "../models/VendorUser";
 import CouponModel from "../models/Coupon";
 import VendorOutletModel from "../models/VendorOutlet";
+import UserModel, { User } from "../models/User";
 
 const fs = require("fs");
 const jwt = require("jsonwebtoken");
@@ -202,3 +203,23 @@ export class UserCouponResolver {
     return history;
   }
 }
+
+export const distributeCoupons = async (
+  filters: any,
+  couponId: String
+): Promise<User[]> => {
+  const filter: any = {};
+  if (filters.city) filter.city = filters.city;
+
+  const users = await UserModel.find(filters);
+  console.log(users);
+  for (const user of users) {
+    const userCoupon = new UserCouponModel({
+      userId: user._id,
+      couponId,
+    });
+    await userCoupon.save();
+  }
+
+  return users;
+};

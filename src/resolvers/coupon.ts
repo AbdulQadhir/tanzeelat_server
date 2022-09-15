@@ -17,6 +17,7 @@ import VendorUserModel from "../models/VendorUser";
 import { AZURE_CONTAINER } from "../constants/azure";
 import { azureUpload, deleteFile } from "../utils/azure";
 import { RedeemType, StoreType } from "../enums/coupon.enum";
+import { distributeCoupons } from "./usercoupon";
 
 const path = require("path");
 
@@ -24,10 +25,10 @@ const path = require("path");
 export class CouponResolver {
   @Query(() => [CouponFilterOutput])
   async couponsWithFilter(
-    @Arg("filter") filter: CouponFilterInput
-    // @Ctx() ctx: Context
+    @Arg("filter") filter: CouponFilterInput,
+    @Ctx() ctx: Context
   ): Promise<CouponFilterOutput[]> {
-    // const userId = ctx.userId || "";
+    const userId = ctx.userId;
 
     const today = new Date();
 
@@ -209,8 +210,10 @@ export class CouponResolver {
           "outlet.name": "$outletName",
           "outlet.state": "$state",
           "outlet.workingHours": "$workingHours",
+          "coupon._id": "$coupon._id",
           "coupon.name": "$coupon.name",
           "coupon.redeemLimit": "$coupon.redeemLimit",
+          "coupon.perUserLimit": "$coupon.perUserLimit",
           "coupon.description": "$coupon.description",
           "coupon.endDate": "$coupon.endDate",
           "coupon.startDate": "$coupon.startDate",
@@ -242,9 +245,71 @@ export class CouponResolver {
         },
       },
       {
+        $lookup: {
+          from: "usercoupons",
+          localField: "coupon._id",
+          foreignField: "couponId",
+          as: "coupon.usercoupons",
+        },
+      },
+      {
+        $addFields: {
+          "coupon.totalRedeemed": {
+            $filter: {
+              input: "$coupon.usercoupons",
+              as: "usercoupon",
+              cond: { $eq: ["$$usercoupon.redeemed", true] },
+            },
+          },
+          "coupon.userRedeemed": {
+            $filter: {
+              input: "$coupon.usercoupons",
+              as: "usercoupon",
+              cond: {
+                $and: [
+                  {
+                    $eq: ["$$usercoupon.userId", new Types.ObjectId(userId)],
+                  },
+                  { $eq: ["$$usercoupon.redeemed", true] },
+                ],
+              },
+            },
+          },
+        },
+      },
+      {
+        $addFields: {
+          "coupon.usercoupons": null,
+          "coupon.userRedeemed": { $size: "$coupon.userRedeemed" },
+          "coupon.totalRedeemed": { $size: "$coupon.totalRedeemed" },
+        },
+      },
+      {
+        $match: {
+          $and: [
+            {
+              $expr: {
+                $gt: [
+                  { $ifNull: ["$coupon.perUserLimit", 10000] },
+                  "$coupon.userRedeemed",
+                ],
+              },
+            },
+            {
+              $expr: {
+                $gt: [
+                  { $ifNull: ["$coupon.redeemLimit", 10000] },
+                  "$coupon.totalRedeemed",
+                ],
+              },
+            },
+          ],
+        },
+      },
+      {
         $match: {
           ...filterSearch,
-          endDate: { $gte: today },
+          //   endDate: { $gte: today },
         },
       },
       // {
@@ -607,6 +672,7 @@ export class CouponResolver {
     let menu: any = null;
     let thumbnail: any = null;
     let thumbnailAr: any = null;
+    const closedFilters = { ...input.closedFilter };
     if (input.menu) {
       const { createReadStream, filename } = await input?.menu;
 
@@ -653,17 +719,17 @@ export class CouponResolver {
       thumbnailAr = Location;
     }
     const code = input.code || Math.floor(100000 + Math.random() * 900000);
-    const redeemType =
-      input.redeemLimit == 0 ? RedeemType.Open : RedeemType.Closed;
     const coupon = new CouponModel({
       ...input,
       menu,
       thumbnail,
       thumbnailAr,
       code,
-      redeemType,
     });
     const result = await coupon.save();
+    if (input.redeemType == RedeemType.Closed) {
+      await distributeCoupons(closedFilters, result._id);
+    }
     return result;
   }
 
