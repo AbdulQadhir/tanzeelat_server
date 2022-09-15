@@ -143,10 +143,30 @@ export class CouponResolver {
         },
       },
       {
+        $addFields: {
+          endDate: {
+            $add: [
+              {
+                $dateFromString: {
+                  dateString: {
+                    $dateToString: {
+                      format: "%Y-%m-%d",
+                      date: "$coupon.endDate",
+                    },
+                  },
+                },
+              },
+              1 * 24 * 60 * 60000,
+            ],
+          },
+        },
+      },
+      {
         $match: {
           ...filterCategory,
           ...filterCouponList,
           "coupon.storeType": StoreType.InStore,
+          endDate: { $gte: today },
         },
       },
       {
@@ -227,21 +247,6 @@ export class CouponResolver {
           "coupon.customDtDescriptionAr": "$coupon.customDtDescriptionAr",
           "coupon.redeemType": "$coupon.redeemType",
           "coupon.storeType": "$coupon.storeType",
-          endDate: {
-            $add: [
-              {
-                $dateFromString: {
-                  dateString: {
-                    $dateToString: {
-                      format: "%Y-%m-%d",
-                      date: "$coupon.endDate",
-                    },
-                  },
-                },
-              },
-              1 * 24 * 60 * 60000,
-            ],
-          },
         },
       },
       {
@@ -326,10 +331,30 @@ export class CouponResolver {
 
     let aggregationOnline = [
       {
+        $addFields: {
+          endDate: {
+            $add: [
+              {
+                $dateFromString: {
+                  dateString: {
+                    $dateToString: {
+                      format: "%Y-%m-%d",
+                      date: "$endDate",
+                    },
+                  },
+                },
+              },
+              1 * 24 * 60 * 60000,
+            ],
+          },
+        },
+      },
+      {
         $match: {
           ...filterCategory2,
           ...filterCouponList2,
           storeType: StoreType.Online,
+          endDate: { $gte: today },
         },
       },
       {
@@ -372,21 +397,6 @@ export class CouponResolver {
           "coupon.customDtDescriptionAr": "$customDtDescriptionAr",
           "coupon.redeemType": "$redeemType",
           "coupon.storeType": "$storeType",
-          endDate: {
-            $add: [
-              {
-                $dateFromString: {
-                  dateString: {
-                    $dateToString: {
-                      format: "%Y-%m-%d",
-                      date: "$endDate",
-                    },
-                  },
-                },
-              },
-              1 * 24 * 60 * 60000,
-            ],
-          },
         },
       },
       {
