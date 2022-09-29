@@ -29,6 +29,7 @@ import { LogResolver } from "./resolvers/logs";
 import { NotificationResolver } from "./resolvers/notification";
 import { AnalyticsResolver } from "./resolvers/analytics";
 import { CatalogPriorityResolver } from "./resolvers/catalogPriority";
+import { CityAreaResolver } from "./resolvers/cityArea";
 
 const fs = require("fs");
 const jwt = require("jsonwebtoken");
@@ -67,6 +68,7 @@ const startServer = async () => {
         NotificationResolver,
         AnalyticsResolver,
         CatalogPriorityResolver,
+        CityAreaResolver,
       ],
     }),
     uploads: false,

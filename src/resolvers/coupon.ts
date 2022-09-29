@@ -18,6 +18,7 @@ import { AZURE_CONTAINER } from "../constants/azure";
 import { azureUpload, deleteFile } from "../utils/azure";
 import { RedeemType, StoreType } from "../enums/coupon.enum";
 import { distributeCoupons } from "./usercoupon";
+import { randomBytes } from "crypto";
 
 const path = require("path");
 
@@ -30,7 +31,7 @@ export class CouponResolver {
   ): Promise<CouponFilterOutput[]> {
     const userId = ctx.userId;
 
-    const today = new Date();
+    // const today = new Date();
 
     const filterState =
       filter.state != ""
@@ -115,7 +116,7 @@ export class CouponResolver {
     const filterDistance: any = filter.coordinates
       ? {
           $geoNear: {
-            near: { type: "Point", coordinates: filter.coordinates },
+            near: { type: "Point", coordinates: [11.0422869, 75.9925838] },
             distanceField: "distance",
             spherical: true,
           },
@@ -166,7 +167,8 @@ export class CouponResolver {
           ...filterCategory,
           ...filterCouponList,
           "coupon.storeType": StoreType.InStore,
-          endDate: { $gte: today },
+          ...(!userId && { "coupon.redeemType": RedeemType.Open }),
+          //  endDate: { $gte: today },
         },
       },
       {
@@ -266,20 +268,25 @@ export class CouponResolver {
               cond: { $eq: ["$$usercoupon.redeemed", true] },
             },
           },
-          "coupon.userRedeemed": {
-            $filter: {
-              input: "$coupon.usercoupons",
-              as: "usercoupon",
-              cond: {
-                $and: [
-                  {
-                    $eq: ["$$usercoupon.userId", new Types.ObjectId(userId)],
+          "coupon.userRedeemed": userId
+            ? {
+                $filter: {
+                  input: "$coupon.usercoupons",
+                  as: "usercoupon",
+                  cond: {
+                    $and: [
+                      {
+                        $eq: [
+                          "$$usercoupon.userId",
+                          new Types.ObjectId(userId),
+                        ],
+                      },
+                      { $eq: ["$$usercoupon.redeemed", true] },
+                    ],
                   },
-                  { $eq: ["$$usercoupon.redeemed", true] },
-                ],
-              },
-            },
-          },
+                },
+              }
+            : [],
         },
       },
       {
@@ -354,7 +361,7 @@ export class CouponResolver {
           ...filterCategory2,
           ...filterCouponList2,
           storeType: StoreType.Online,
-          endDate: { $gte: today },
+          //  endDate: { $gte: today },
         },
       },
       {
@@ -402,7 +409,7 @@ export class CouponResolver {
       {
         $match: {
           ...filterSearch,
-          endDate: { $gte: today },
+          //  endDate: { $gte: today },
         },
       },
       // {
@@ -729,15 +736,23 @@ export class CouponResolver {
       thumbnailAr = Location;
     }
     const code = input.code || Math.floor(100000 + Math.random() * 900000);
+    const couponCount = await CouponModel.count();
+    const rndString = randomBytes(5).toString("hex");
+    const uuid = rndString + couponCount;
+
     const coupon = new CouponModel({
       ...input,
+      uuid,
       menu,
       thumbnail,
       thumbnailAr,
       code,
     });
     const result = await coupon.save();
-    if (input.redeemType == RedeemType.Closed) {
+    if (
+      input.redeemType == RedeemType.Closed &&
+      input.storeType == StoreType.InStore
+    ) {
       await distributeCoupons(closedFilters, result._id);
     }
     return result;
@@ -830,4 +845,13 @@ export class CouponResolver {
     const result = await CouponModel.findByIdAndUpdate(id, replace);
     return result;
   }
+  /*
+  @Mutation(() => Boolean)
+  async testCoupon(): Promise<Boolean> {
+    console.log(
+      await distributeCoupons({ city: "AbuDhabi" }, "61ea640b8f9568704ed59975")
+    );
+    return false;
+  }
+  */
 }

@@ -209,10 +209,13 @@ export const distributeCoupons = async (
   couponId: String
 ): Promise<User[]> => {
   const filter: any = {};
-  if (filters.city) filter.city = filters.city;
+  if (filters.city) filter.city = { $in: filters.city.split(",") };
 
-  const users = await UserModel.find(filters);
+  const users = await UserModel.find(filter);
   console.log(users);
+  await UserCouponModel.deleteMany({
+    couponId,
+  });
   for (const user of users) {
     const userCoupon = new UserCouponModel({
       userId: user._id,

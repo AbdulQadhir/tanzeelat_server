@@ -16,6 +16,10 @@ export class Coupon {
 
   @prop()
   @Field({ nullable: true })
+  uuid: string;
+
+  @prop()
+  @Field({ nullable: true })
   name: string;
 
   @prop()
@@ -140,6 +144,7 @@ export class Coupon {
 }
 
 const couponSchema = new Schema({
+  uuid: String,
   name: String,
   namear: String,
   description: String,
