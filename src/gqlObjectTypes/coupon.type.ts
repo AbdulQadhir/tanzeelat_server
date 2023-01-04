@@ -5,6 +5,12 @@ import { Vendor } from "../models/Vendor";
 import { Coupon } from "../models/Coupon";
 import { VendorOutlet } from "../models/VendorOutlet";
 
+@InputType({ description: "Coupon filter for Closed coupons" })
+export class ClosedCouponFilterInput {
+  @Field({ nullable: true })
+  city: string;
+}
+
 @InputType({ description: "New Coupon data" })
 export class CouponInput {
   @Field()
@@ -56,6 +62,9 @@ export class CouponInput {
   redeemLimit: Number;
 
   @Field(() => Number, { nullable: true })
+  perUserLimit: Number;
+
+  @Field(() => Number, { nullable: true })
   featured: Number;
 
   @Field({ nullable: true })
@@ -78,6 +87,12 @@ export class CouponInput {
 
   @Field({ nullable: true })
   storeType: string;
+
+  @Field({ nullable: true })
+  redeemType: string;
+
+  @Field(() => ClosedCouponFilterInput, { nullable: true })
+  closedFilter: ClosedCouponFilterInput;
 }
 
 @InputType({ description: "Coupon filter" })

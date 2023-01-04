@@ -17,6 +17,8 @@ import VendorUserModel from "../models/VendorUser";
 import { AZURE_CONTAINER } from "../constants/azure";
 import { azureUpload, deleteFile } from "../utils/azure";
 import { RedeemType, StoreType } from "../enums/coupon.enum";
+import { distributeCoupons } from "./usercoupon";
+import { randomBytes } from "crypto";
 
 const path = require("path");
 
@@ -24,12 +26,12 @@ const path = require("path");
 export class CouponResolver {
   @Query(() => [CouponFilterOutput])
   async couponsWithFilter(
-    @Arg("filter") filter: CouponFilterInput
-    // @Ctx() ctx: Context
+    @Arg("filter") filter: CouponFilterInput,
+    @Ctx() ctx: Context
   ): Promise<CouponFilterOutput[]> {
-    // const userId = ctx.userId || "";
+    const userId = ctx.userId;
 
-    const today = new Date();
+    // const today = new Date();
 
     const filterState =
       filter.state != ""
@@ -114,7 +116,7 @@ export class CouponResolver {
     const filterDistance: any = filter.coordinates
       ? {
           $geoNear: {
-            near: { type: "Point", coordinates: filter.coordinates },
+            near: { type: "Point", coordinates: [11.0422869, 75.9925838] },
             distanceField: "distance",
             spherical: true,
           },
@@ -142,10 +144,31 @@ export class CouponResolver {
         },
       },
       {
+        $addFields: {
+          endDate: {
+            $add: [
+              {
+                $dateFromString: {
+                  dateString: {
+                    $dateToString: {
+                      format: "%Y-%m-%d",
+                      date: "$coupon.endDate",
+                    },
+                  },
+                },
+              },
+              1 * 24 * 60 * 60000,
+            ],
+          },
+        },
+      },
+      {
         $match: {
           ...filterCategory,
           ...filterCouponList,
           "coupon.storeType": StoreType.InStore,
+          ...(!userId && { "coupon.redeemType": RedeemType.Open }),
+          //  endDate: { $gte: today },
         },
       },
       {
@@ -209,8 +232,10 @@ export class CouponResolver {
           "outlet.name": "$outletName",
           "outlet.state": "$state",
           "outlet.workingHours": "$workingHours",
+          "coupon._id": "$coupon._id",
           "coupon.name": "$coupon.name",
           "coupon.redeemLimit": "$coupon.redeemLimit",
+          "coupon.perUserLimit": "$coupon.perUserLimit",
           "coupon.description": "$coupon.description",
           "coupon.endDate": "$coupon.endDate",
           "coupon.startDate": "$coupon.startDate",
@@ -224,27 +249,79 @@ export class CouponResolver {
           "coupon.customDtDescriptionAr": "$coupon.customDtDescriptionAr",
           "coupon.redeemType": "$coupon.redeemType",
           "coupon.storeType": "$coupon.storeType",
-          endDate: {
-            $add: [
-              {
-                $dateFromString: {
-                  dateString: {
-                    $dateToString: {
-                      format: "%Y-%m-%d",
-                      date: "$coupon.endDate",
-                    },
+        },
+      },
+      {
+        $lookup: {
+          from: "usercoupons",
+          localField: "coupon._id",
+          foreignField: "couponId",
+          as: "coupon.usercoupons",
+        },
+      },
+      {
+        $addFields: {
+          "coupon.totalRedeemed": {
+            $filter: {
+              input: "$coupon.usercoupons",
+              as: "usercoupon",
+              cond: { $eq: ["$$usercoupon.redeemed", true] },
+            },
+          },
+          "coupon.userRedeemed": userId
+            ? {
+                $filter: {
+                  input: "$coupon.usercoupons",
+                  as: "usercoupon",
+                  cond: {
+                    $and: [
+                      {
+                        $eq: [
+                          "$$usercoupon.userId",
+                          new Types.ObjectId(userId),
+                        ],
+                      },
+                      { $eq: ["$$usercoupon.redeemed", true] },
+                    ],
                   },
                 },
+              }
+            : [],
+        },
+      },
+      {
+        $addFields: {
+          "coupon.usercoupons": null,
+          "coupon.userRedeemed": { $size: "$coupon.userRedeemed" },
+          "coupon.totalRedeemed": { $size: "$coupon.totalRedeemed" },
+        },
+      },
+      {
+        $match: {
+          $and: [
+            {
+              $expr: {
+                $gt: [
+                  { $ifNull: ["$coupon.perUserLimit", 10000] },
+                  "$coupon.userRedeemed",
+                ],
               },
-              1 * 24 * 60 * 60000,
-            ],
-          },
+            },
+            {
+              $expr: {
+                $gt: [
+                  { $ifNull: ["$coupon.redeemLimit", 10000] },
+                  "$coupon.totalRedeemed",
+                ],
+              },
+            },
+          ],
         },
       },
       {
         $match: {
           ...filterSearch,
-          endDate: { $gte: today },
+          //   endDate: { $gte: today },
         },
       },
       // {
@@ -261,10 +338,30 @@ export class CouponResolver {
 
     let aggregationOnline = [
       {
+        $addFields: {
+          endDate: {
+            $add: [
+              {
+                $dateFromString: {
+                  dateString: {
+                    $dateToString: {
+                      format: "%Y-%m-%d",
+                      date: "$endDate",
+                    },
+                  },
+                },
+              },
+              1 * 24 * 60 * 60000,
+            ],
+          },
+        },
+      },
+      {
         $match: {
           ...filterCategory2,
           ...filterCouponList2,
           storeType: StoreType.Online,
+          //  endDate: { $gte: today },
         },
       },
       {
@@ -307,27 +404,12 @@ export class CouponResolver {
           "coupon.customDtDescriptionAr": "$customDtDescriptionAr",
           "coupon.redeemType": "$redeemType",
           "coupon.storeType": "$storeType",
-          endDate: {
-            $add: [
-              {
-                $dateFromString: {
-                  dateString: {
-                    $dateToString: {
-                      format: "%Y-%m-%d",
-                      date: "$endDate",
-                    },
-                  },
-                },
-              },
-              1 * 24 * 60 * 60000,
-            ],
-          },
         },
       },
       {
         $match: {
           ...filterSearch,
-          endDate: { $gte: today },
+          //  endDate: { $gte: today },
         },
       },
       // {
@@ -607,6 +689,7 @@ export class CouponResolver {
     let menu: any = null;
     let thumbnail: any = null;
     let thumbnailAr: any = null;
+    const closedFilters = { ...input.closedFilter };
     if (input.menu) {
       const { createReadStream, filename } = await input?.menu;
 
@@ -653,17 +736,25 @@ export class CouponResolver {
       thumbnailAr = Location;
     }
     const code = input.code || Math.floor(100000 + Math.random() * 900000);
-    const redeemType =
-      input.redeemLimit == 0 ? RedeemType.Open : RedeemType.Closed;
+    const couponCount = await CouponModel.count();
+    const rndString = randomBytes(5).toString("hex");
+    const uuid = rndString + couponCount;
+
     const coupon = new CouponModel({
       ...input,
+      uuid,
       menu,
       thumbnail,
       thumbnailAr,
       code,
-      redeemType,
     });
     const result = await coupon.save();
+    if (
+      input.redeemType == RedeemType.Closed &&
+      input.storeType == StoreType.InStore
+    ) {
+      await distributeCoupons(closedFilters, result._id);
+    }
     return result;
   }
 
@@ -754,4 +845,13 @@ export class CouponResolver {
     const result = await CouponModel.findByIdAndUpdate(id, replace);
     return result;
   }
+  /*
+  @Mutation(() => Boolean)
+  async testCoupon(): Promise<Boolean> {
+    console.log(
+      await distributeCoupons({ city: "AbuDhabi" }, "61ea640b8f9568704ed59975")
+    );
+    return false;
+  }
+  */
 }

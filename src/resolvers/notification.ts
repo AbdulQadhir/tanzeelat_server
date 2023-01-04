@@ -94,6 +94,43 @@ export class NotificationResolver {
   }
 
   @Mutation(() => Boolean)
+  async testNotification(): Promise<Boolean> {
+    const client = new OneSignal.Client(
+      "024cf334-7e0e-441e-af26-42c99dba3a81", //"8010025e-cf62-4172-a3d1-5753bdb00d58",
+      "NDNjNjcwMWEtMDNhOS00OGUyLTk4MWEtNDExMWY0ZTE1OWY0" //"Mzg1MzQ4NTEtZjkzYi00ZTQ1LWJjNzgtYWE2ZWEyZDhlNGY0"
+    );
+    const notification = {
+      headings: {
+        ar: "test",
+        en: "test",
+      },
+      contents: {
+        ar: "test",
+        en: "test",
+      },
+      data: {
+        description: "test",
+        descriptionar: "test",
+        type: "specific",
+      },
+      include_player_ids: ["0e3b3f23-c0f6-4d8b-ba44-039315c8c13d"],
+    };
+
+    try {
+      const response = await client.createNotification(notification);
+      console.log(response.body);
+    } catch (e) {
+      if (e instanceof OneSignal.HTTPError) {
+        // When status code of HTTP response is not 2xx, HTTPError is thrown.
+        console.log(e.statusCode);
+        console.log(e.body);
+      }
+    }
+
+    return true;
+  }
+
+  @Mutation(() => Boolean)
   async sendUserNotification(
     @Arg("input") input: NotificationInput,
     @Ctx() ctx: Context
@@ -138,8 +175,8 @@ export class NotificationResolver {
     }
 
     const client = new OneSignal.Client(
-      "8010025e-cf62-4172-a3d1-5753bdb00d58",
-      "Mzg1MzQ4NTEtZjkzYi00ZTQ1LWJjNzgtYWE2ZWEyZDhlNGY0"
+      "024cf334-7e0e-441e-af26-42c99dba3a81", //"8010025e-cf62-4172-a3d1-5753bdb00d58",
+      "NDNjNjcwMWEtMDNhOS00OGUyLTk4MWEtNDExMWY0ZTE1OWY0" //"Mzg1MzQ4NTEtZjkzYi00ZTQ1LWJjNzgtYWE2ZWEyZDhlNGY0"
     );
     const notification = {
       headings: {

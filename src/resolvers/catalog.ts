@@ -558,17 +558,16 @@ export class CatalogResolver {
       },
     ]);
 
-    catalogs.sort(function (x, y) {
+    last4Catalogs.sort(function (x, y) {
       return x.state == state ? -1 : y.state == state ? 1 : 0;
     });
 
-    catalogs.forEach((el, index) => {
-      const cats =
-        last4Catalogs.find((e) => e.state == el.state)?.catalogs || [];
-      catalogs[index].catalogs = [...cats, ...el.catalogs];
+    last4Catalogs.forEach((el, index) => {
+      const cats = catalogs.find((e) => e.state == el.state)?.catalogs || [];
+      last4Catalogs[index].catalogs.push(...cats);
     });
 
-    return catalogs;
+    return last4Catalogs;
   }
 
   @Query(() => [Catalog])
