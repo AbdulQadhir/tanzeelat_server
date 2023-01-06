@@ -562,12 +562,19 @@ export class CatalogResolver {
       return x.state == state ? -1 : y.state == state ? 1 : 0;
     });
 
+    const result: Array<any> = [];
+
     last4Catalogs.forEach((el, index) => {
       const cats = catalogs.find((e) => e.state == el.state)?.catalogs || [];
       last4Catalogs[index].catalogs.push(...cats);
+      result[index] = last4Catalogs[index];
     });
 
-    return last4Catalogs;
+    catalogs.forEach((el, index) => {
+      if (!result[index]) result[index] = el;
+    });
+
+    return result;
   }
 
   @Query(() => [Catalog])
